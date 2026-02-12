@@ -1,0 +1,44 @@
+<% content_for :title, "Загрузить фото - VirtualStagingAI" %>
+
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-2xl mx-auto">
+    <div class="card">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Загрузить фото</h1>
+        <p class="text-gray-600">Выберите изображение для виртуального стайлинга</p>
+      </div>
+
+      <%= form_with model: @image, url: projects_path, method: :post, multipart: true, class: "space-y-6" do |f| %>
+        <%= render "shared/error_messages", resource: @image %>
+
+        <div>
+          <%= f.label :file, "Файл изображения", class: "block text-sm font-medium text-gray-700 mb-2" %>
+          <%= f.file_field :file, accept: "image/*", class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-500 file:text-white hover:file:bg-primary-600 cursor-pointer", required: true %>
+          <p class="mt-1 text-xs text-gray-500">Поддерживаются форматы: JPG, PNG, WebP</p>
+        </div>
+
+        <div>
+          <%= f.label :room_type, "Тип комнаты", class: "block text-sm font-medium text-gray-700 mb-2" %>
+          <%= f.select :room_type, 
+              options_for_select([
+                ["Не выбрано", ""],
+                ["Гостиная", "living_room"],
+                ["Спальня", "bedroom"],
+                ["Столовая", "dining_room"],
+                ["Кухня", "kitchen"],
+                ["Ванная", "bathroom"],
+                ["Офис", "office"],
+                ["Основная зона", "main_area"]
+              ], @image.room_type),
+              {},
+              { class: "input" } %>
+        </div>
+
+        <div class="flex space-x-4">
+          <%= f.submit "Загрузить", class: "btn-primary flex-1" %>
+          <%= link_to "Отмена", dashboard_path, class: "btn-secondary flex-1 text-center" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

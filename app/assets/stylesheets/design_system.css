@@ -1,0 +1,615 @@
+/**
+ * Дизайн-система VirtualStagingAI
+ * Версия: 1.0.0
+ * 
+ * Использование: @import 'design_system';
+ */
+
+/* ============================================
+   CSS ПЕРЕМЕННЫЕ
+   ============================================ */
+
+:root {
+  /* ===== ЦВЕТА ===== */
+  
+  /* Primary */
+  --primary-500: #5a67d8;
+  --primary-600: #4c51bf;
+  --primary-700: #434190;
+  --primary-800: #3c366b;
+  --primary-50: #eef2ff;
+  --primary-100: #e0e7ff;
+  
+  /* Градиенты */
+  --gradient-primary: linear-gradient(135deg, #5a67d8 0%, #6b46c1 50%, #7c3aed 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #4c51bf 0%, #5b21b6 50%, #6d28d9 100%);
+  --gradient-hero: linear-gradient(135deg, #5a67d8 0%, #6b46c1 30%, #7c3aed 70%, #8b5cf6 100%);
+  
+  /* Accent */
+  --accent-gold: #f59e0b;
+  --accent-gold-light: #fbbf24;
+  --accent-success: #10b981;
+  --accent-error: #ef4444;
+  --accent-warning: #f59e0b;
+  --accent-info: #3b82f6;
+  
+  /* Нейтральные */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  
+  --white: #ffffff;
+  --black: #000000;
+  
+  /* Фоны */
+  --bg-primary: var(--white);
+  --bg-secondary: var(--gray-50);
+  --bg-tertiary: var(--gray-100);
+  --bg-overlay: rgba(0, 0, 0, 0.6);
+  --bg-overlay-light: rgba(255, 255, 255, 0.1);
+  
+  /* ===== ТИПОГРАФИКА ===== */
+  
+  /* Размеры */
+  --text-6xl: 3.75rem;    /* 60px */
+  --text-5xl: 3rem;       /* 48px */
+  --text-4xl: 2.25rem;    /* 36px */
+  --text-3xl: 1.875rem;   /* 30px */
+  --text-2xl: 1.5rem;     /* 24px */
+  --text-xl: 1.25rem;     /* 20px */
+  --text-lg: 1.125rem;    /* 18px */
+  --text-base: 1rem;      /* 16px */
+  --text-sm: 0.875rem;    /* 14px */
+  --text-xs: 0.75rem;     /* 12px */
+  
+  /* Веса */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  
+  /* Высота строк */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  --leading-loose: 2;
+  
+  /* ===== SPACING ===== */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+  --space-24: 6rem;     /* 96px */
+  
+  /* ===== ТЕНИ ===== */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  
+  /* ===== BORDER RADIUS ===== */
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-base: 0.5rem;  /* 8px */
+  --radius-md: 0.75rem;   /* 12px */
+  --radius-lg: 1rem;      /* 16px */
+  --radius-xl: 1.5rem;    /* 24px */
+  --radius-2xl: 2rem;     /* 32px */
+  --radius-full: 9999px;
+  
+  /* ===== АНИМАЦИИ ===== */
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+  --duration-slow: 500ms;
+  --duration-slower: 700ms;
+  
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  --transition-hover: all var(--duration-base) var(--ease-smooth);
+  --transition-fade: opacity var(--duration-base) var(--ease-smooth);
+  --transition-transform: transform var(--duration-base) var(--ease-smooth);
+  --transition-all: all var(--duration-base) var(--ease-smooth);
+  
+  /* ===== Z-INDEX ===== */
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  
+  /* ===== BREAKPOINTS ===== */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+/* ============================================
+   БАЗОВЫЕ СТИЛИ
+   ============================================ */
+
+* {
+  font-family: 'IBM Plex Sans', sans-serif;
+  line-height: var(--leading-normal);
+}
+
+body {
+  background: var(--bg-secondary);
+  color: var(--gray-800);
+  font-size: var(--text-base);
+  font-weight: var(--font-normal);
+}
+
+/* ============================================
+   ТИПОГРАФИКА
+   ============================================ */
+
+h1 {
+  font-size: var(--text-5xl);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+  color: var(--gray-900);
+}
+
+h2 {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+  color: var(--gray-800);
+}
+
+h3 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+  color: var(--gray-800);
+}
+
+h4 {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-normal);
+  color: var(--gray-700);
+}
+
+p {
+  font-size: var(--text-base);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-relaxed);
+  color: var(--gray-600);
+}
+
+small {
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
+  line-height: var(--leading-normal);
+  color: var(--gray-500);
+}
+
+/* ============================================
+   КОМПОНЕНТЫ: КНОПКИ
+   ============================================ */
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: var(--white);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  transition: var(--transition-all);
+  box-shadow: var(--shadow-md);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left var(--duration-slow);
+}
+
+.btn-primary:hover {
+  background: var(--gradient-primary-hover);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-primary:focus {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: var(--white);
+  color: var(--primary-600);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  border: 2px solid var(--primary-600);
+  transition: var(--transition-all);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.btn-secondary:hover {
+  background: var(--primary-50);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary:focus {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--gray-600);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-medium);
+  transition: var(--transition-all);
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.btn-ghost:hover {
+  color: var(--primary-600);
+  background: var(--gray-50);
+}
+
+.btn-ghost:focus {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   КОМПОНЕНТЫ: КАРТОЧКИ
+   ============================================ */
+
+.card {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-base);
+  transition: var(--transition-all);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.card-compact {
+  padding: var(--space-4);
+}
+
+.card-spacious {
+  padding: var(--space-8);
+}
+
+/* ============================================
+   КОМПОНЕНТЫ: ФОРМЫ
+   ============================================ */
+
+.input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-base);
+  font-size: var(--text-base);
+  transition: var(--transition-all);
+  background: var(--white);
+  color: var(--gray-800);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.1);
+}
+
+.input::placeholder {
+  color: var(--gray-400);
+}
+
+.textarea {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-base);
+  font-size: var(--text-base);
+  min-height: 120px;
+  resize: vertical;
+  transition: var(--transition-all);
+  background: var(--white);
+  color: var(--gray-800);
+  font-family: inherit;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.1);
+}
+
+/* ============================================
+   КОМПОНЕНТЫ: BADGES
+   ============================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+}
+
+.badge-primary {
+  background: var(--primary-100);
+  color: var(--primary-700);
+}
+
+.badge-success {
+  background: var(--accent-success);
+  color: var(--white);
+}
+
+.badge-error {
+  background: var(--accent-error);
+  color: var(--white);
+}
+
+.badge-warning {
+  background: var(--accent-warning);
+  color: var(--white);
+}
+
+.badge-info {
+  background: var(--accent-info);
+  color: var(--white);
+}
+
+/* ============================================
+   УТИЛИТЫ: GRADIENT
+   ============================================ */
+
+.gradient-bg {
+  background: var(--gradient-primary);
+  position: relative;
+}
+
+.gradient-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 50%, rgba(139, 92, 246, 0.3), transparent 70%);
+  pointer-events: none;
+}
+
+.hero-gradient {
+  background: var(--gradient-hero);
+  position: relative;
+}
+
+.hero-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.4), transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(99, 102, 241, 0.3), transparent 50%);
+  pointer-events: none;
+}
+
+/* ============================================
+   УТИЛИТЫ: АНИМАЦИИ
+   ============================================ */
+
+.hover-scale {
+  transition: var(--transition-transform);
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity var(--duration-slow) var(--ease-smooth), 
+              transform var(--duration-slow) var(--ease-smooth);
+}
+
+.fade-in-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================
+   УТИЛИТЫ: КОНТЕЙНЕРЫ
+   ============================================ */
+
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+.container-sm {
+  max-width: 640px;
+}
+
+.container-md {
+  max-width: 768px;
+}
+
+.container-lg {
+  max-width: 1024px;
+}
+
+.container-xl {
+  max-width: 1280px;
+}
+
+/* ============================================
+   УТИЛИТЫ: NAVIGATION
+   ============================================ */
+
+.sticky-nav {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: var(--shadow-sm);
+}
+
+.nav-link {
+  color: var(--gray-600);
+  font-weight: var(--font-medium);
+  transition: var(--transition-all);
+  text-decoration: none;
+}
+
+.nav-link:hover {
+  color: var(--primary-600);
+}
+
+/* ============================================
+   АНИМАЦИИ KEYFRAMES
+   ============================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleHover {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.focus-ring {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.focus-ring:focus {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+}
+
+/* Скрыть визуально, но оставить для screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ============================================
+   RESPONSIVE HELPERS
+   ============================================ */
+
+@media (min-width: 640px) {
+  .container {
+    padding: 0 var(--space-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 0 var(--space-8);
+  }
+}

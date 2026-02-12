@@ -1,0 +1,784 @@
+<% content_for :title, "Virtual Staging AI - Transform Empty Rooms Instantly" %>
+
+<% content_for :head do %>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .hover-scale { transition: transform 0.3s ease; }
+    .hover-scale:hover { transform: scale(1.05); }
+    .before-after-container { position: relative; overflow: hidden; }
+    .before-after-slider { position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background: white; cursor: ew-resize; }
+    .room-style-card { transition: all 0.3s ease; }
+    .room-style-card:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    .sticky-nav { position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
+    /* Font Awesome icon replacements */
+    .fa-cloud-upload-alt::before, .fa-cloud-upload-alt { content: "📤"; font-style: normal; }
+    .fa-check-circle::before, .fa-check-circle { content: "✓"; font-style: normal; }
+    .fa-dollar-sign::before, .fa-dollar-sign { content: "$"; font-style: normal; }
+    .fa-bolt::before, .fa-bolt { content: "⚡"; font-style: normal; }
+    .fa-couch::before, .fa-couch { content: "🛋️"; font-style: normal; }
+    .fa-images::before, .fa-images { content: "🖼️"; font-style: normal; }
+    .fa-users::before, .fa-users { content: "👥"; font-style: normal; }
+    .fa-clock::before, .fa-clock { content: "⏱️"; font-style: normal; }
+    .fa-check::before, .fa-check { content: "✓"; font-style: normal; }
+    .fa-play-circle::before, .fa-play-circle { content: "▶"; font-style: normal; }
+    .fa-hand-sparkles::before, .fa-hand-sparkles { content: "✨"; font-style: normal; }
+    .fa-infinity::before, .fa-infinity { content: "∞"; font-style: normal; }
+    .fa-robot::before, .fa-robot { content: "🤖"; font-style: normal; }
+    .fa-file-contract::before, .fa-file-contract { content: "📄"; font-style: normal; }
+    .fa-mobile-alt::before, .fa-mobile-alt { content: "📱"; font-style: normal; }
+    .fa-shield-alt::before, .fa-shield-alt { content: "🛡️"; font-style: normal; }
+    .fa-facebook::before, .fa-facebook { content: "f"; font-style: normal; }
+    .fa-instagram::before, .fa-instagram { content: "📷"; font-style: normal; }
+    .fa-youtube::before, .fa-youtube { content: "▶"; font-style: normal; }
+    .fa-linkedin::before, .fa-linkedin { content: "in"; font-style: normal; }
+    .fa-heart::before, .fa-heart { content: "❤"; font-style: normal; }
+    .fa-paper-plane::before, .fa-paper-plane { content: "✈"; font-style: normal; }
+    .fa-brain::before, .fa-brain { content: "🧠"; font-style: normal; }
+    .fa-download::before, .fa-download { content: "⬇"; font-style: normal; }
+</style>
+<% end %>
+
+<div class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="sticky-nav bg-white/90 shadow-sm">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="gradient-bg w-8 h-8 rounded-lg"></div>
+                    <span class="text-xl font-bold text-gray-800">VirtualStagingAI</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#gallery" class="text-gray-600 hover:text-purple-600 font-medium">Gallery</a>
+                    <a href="#styles" class="text-gray-600 hover:text-purple-600 font-medium">Room Styles</a>
+                    <a href="#how" class="text-gray-600 hover:text-purple-600 font-medium">How It Works</a>
+                    <a href="#pricing" class="text-gray-600 hover:text-purple-600 font-medium">Pricing</a>
+                    <a href="#" class="text-gray-600 hover:text-purple-600 font-medium">API</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <% if user_signed_in? %>
+                        <%= link_to "Профиль", edit_user_registration_path, class: "text-gray-600 hover:text-purple-600 font-medium" %>
+                        <%= link_to "Выйти", destroy_user_session_path, data: { turbo_method: :delete }, class: "gradient-bg text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition" %>
+                    <% else %>
+                        <%= link_to "Войти", new_user_session_path, class: "text-gray-600 hover:text-purple-600 font-medium" %>
+                        <%= link_to "Регистрация", new_user_registration_path, class: "gradient-bg text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition" %>
+                    <% end %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg text-white">
+        <div class="container mx-auto px-4 py-20">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-5xl md:text-6xl font-bold mb-6">Virtual Staging with one click</h1>
+                <p class="text-xl mb-10 text-gray-100">Upload a photo and our AI adds furniture in seconds.</p>
+                
+                <div class="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-6 mb-16">
+                    <button class="bg-white text-purple-700 px-8 py-4 rounded-xl text-lg font-semibold hover-scale flex items-center justify-center space-x-3">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span>Upload image for free</span>
+                    </button>
+                    <div class="flex flex-col space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-check-circle text-green-300"></i>
+                            <span>No sign up</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-check-circle text-green-300"></i>
+                            <span>No credit card required</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Before/After Visual -->
+                <div class="before-after-container max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl">
+                    <div class="relative h-96">
+                        <img id="before-image" src="https://images.unsplash.com/photo-1616594039964-ae9021a400a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" class="absolute top-0 left-0 w-full h-full object-cover" alt="Empty room">
+                        <img id="after-image" src="https://images.unsplash.com/photo-1616594039964-ae9021a400a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" class="absolute top-0 left-0 w-1/2 h-full object-cover" alt="Staged room">
+                        <div class="before-after-slider" id="slider"></div>
+                        <div class="absolute top-4 left-4 bg-black/60 text-white px-3 py-1 rounded">Before</div>
+                        <div class="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded">After</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Value Proposition -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-6">Why Choose VirtualStagingAI?</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Used by 10,000+ real estate professionals worldwide</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+                <div class="text-center p-6">
+                    <div class="gradient-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-dollar-sign text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Low Cost</h3>
+                    <p class="text-gray-600">Starting at $9 per photo</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="gradient-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-bolt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Instant Results</h3>
+                    <p class="text-gray-600">~15 seconds processing</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="gradient-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-couch text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Furniture Removal</h3>
+                    <p class="text-gray-600">Remove existing furniture</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="gradient-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-images text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Multi-View Staging</h3>
+                    <p class="text-gray-600">Consistent design across rooms</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="gradient-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-users text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">10,000+ Users</h3>
+                    <p class="text-gray-600">Trusted by professionals</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Before & After Gallery -->
+    <section id="gallery" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-6">See the Transformation: Before & After Gallery</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Real examples from our users</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Gallery Item 1 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-lg hover-scale">
+                    <div class="relative h-64">
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent to-black/30"></div>
+                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Living room transformation">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Modern Living Room</h3>
+                        <p class="text-gray-600 mb-4">Empty space transformed into a cozy living area</p>
+                        <div class="flex justify-between text-sm text-gray-500">
+                            <span><i class="fas fa-clock mr-1"></i> 12s processing</span>
+                            <span><i class="fas fa-couch mr-1"></i> Modern style</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gallery Item 2 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-lg hover-scale">
+                    <div class="relative h-64">
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent to-black/30"></div>
+                        <img src="https://images.unsplash.com/photo-1616594039964-ae9021a400a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Bedroom transformation">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Luxury Bedroom</h3>
+                        <p class="text-gray-600 mb-4">Empty bedroom staged for maximum appeal</p>
+                        <div class="flex justify-between text-sm text-gray-500">
+                            <span><i class="fas fa-clock mr-1"></i> 15s processing</span>
+                            <span><i class="fas fa-couch mr-1"></i> Luxury style</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gallery Item 3 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-lg hover-scale">
+                    <div class="relative h-64">
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent to-black/30"></div>
+                        <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Kitchen transformation">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Scandinavian Kitchen</h3>
+                        <p class="text-gray-600 mb-4">Minimalist kitchen with modern appliances</p>
+                        <div class="flex justify-between text-sm text-gray-500">
+                            <span><i class="fas fa-clock mr-1"></i> 18s processing</span>
+                            <span><i class="fas fa-couch mr-1"></i> Scandinavian</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Room Styles & Design Variations -->
+    <section id="styles" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-6">Room Styles & Design Variations</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">One room, endless possibilities</p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <!-- Style 1 -->
+                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-purple-500">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-gray-300 to-gray-400"></div>
+                    <h3 class="font-semibold text-lg mb-2">Original</h3>
+                    <p class="text-gray-600 text-sm">Empty room</p>
+                </div>
+                
+                <!-- Style 2 -->
+                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-blue-500">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600"></div>
+                    <h3 class="font-semibold text-lg mb-2">Modern</h3>
+                    <p class="text-gray-600 text-sm">Clean lines, minimal</p>
+                </div>
+                
+                <!-- Style 3 -->
+                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-yellow-500">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600"></div>
+                    <h3 class="font-semibold text-lg mb-2">Mid-Century</h3>
+                    <p class="text-gray-600 text-sm">Retro vibes</p>
+                </div>
+                
+                <!-- Style 4 -->
+                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-gray-500">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-gray-100 to-gray-300"></div>
+                    <h3 class="font-semibold text-lg mb-2">Scandinavian</h3>
+                    <p class="text-gray-600 text-sm">Light & airy</p>
+                </div>
+                
+                <!-- Style 5 -->
+                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-gray-800">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-gray-700 to-gray-900"></div>
+                    <h3 class="font-semibold text-lg mb-2">Industrial</h3>
+                    <p class="text-gray-600 text-sm">Raw materials</p>
+                </div>
+                
+                <!-- Style 6 -->
+                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-yellow-400">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-yellow-300 to-yellow-500"></div>
+                    <h3 class="font-semibold text-lg mb-2">Luxury</h3>
+                    <p class="text-gray-600 text-sm">High-end finishes</p>
+                </div>
+                
+                <!-- Style 7 -->
+                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-blue-300">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-blue-200 to-blue-400"></div>
+                    <h3 class="font-semibold text-lg mb-2">Coastal</h3>
+                    <p class="text-gray-600 text-sm">Beach house feel</p>
+                </div>
+                
+                <!-- Style 8 -->
+                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-green-500">
+                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-green-400 to-green-600"></div>
+                    <h3 class="font-semibold text-lg mb-2">Farmhouse</h3>
+                    <p class="text-gray-600 text-sm">Rustic charm</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Buyer & Agent Benefits -->
+    <section class="py-20 gradient-bg text-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-4xl font-bold mb-8">Why Virtual Staging Works for Real Estate</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8">
+                        <div class="text-5xl font-bold mb-4">83%</div>
+                        <p class="text-xl">of buyers say staging helps them visualize the property</p>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8">
+                        <div class="text-5xl font-bold mb-4">2x</div>
+                        <p class="text-xl">Faster sales for staged properties vs. empty ones</p>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8">
+                        <div class="text-5xl font-bold mb-4">17%</div>
+                        <p class="text-xl">Higher offers on staged properties</p>
+                    </div>
+                </div>
+                
+                <p class="text-xl mb-10">Join 10,000+ real estate agents who trust VirtualStagingAI to sell properties faster and for higher prices.</p>
+                
+                <button class="bg-white text-purple-700 px-10 py-4 rounded-xl text-lg font-semibold hover:opacity-90 transition">
+                    Start Staging Now
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Feature - Multi-View Staging -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-4xl font-bold text-gray-800 mb-6">Multi-View Staging</h2>
+                    <p class="text-xl text-gray-600 mb-6">Style your entire property from multiple angles with consistent furniture and design.</p>
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3 text-xl"></i>
+                            <span class="text-lg">Same furniture across all views</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3 text-xl"></i>
+                            <span class="text-lg">Consistent design language</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3 text-xl"></i>
+                            <span class="text-lg">Perfect for entire homes or apartments</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3 text-xl"></i>
+                            <span class="text-lg">Save 50% compared to single-room staging</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="rounded-xl overflow-hidden shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1600566752355-35792bedcfea?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover" alt="Living room view 1">
+                        <div class="p-4 bg-gray-50">
+                            <p class="font-medium">Living Room - View 1</p>
+                        </div>
+                    </div>
+                    <div class="rounded-xl overflow-hidden shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover" alt="Living room view 2">
+                        <div class="p-4 bg-gray-50">
+                            <p class="font-medium">Living Room - View 2</p>
+                        </div>
+                    </div>
+                    <div class="rounded-xl overflow-hidden shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover" alt="Kitchen view">
+                        <div class="p-4 bg-gray-50">
+                            <p class="font-medium">Kitchen</p>
+                        </div>
+                    </div>
+                    <div class="rounded-xl overflow-hidden shadow-lg">
+                        <img src="https://images.unsplash.com/photo-1600566752355-35792bedcfea?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover" alt="Bedroom view">
+                        <div class="p-4 bg-gray-50">
+                            <p class="font-medium">Bedroom</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-6">How It Works</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Three simple steps to transform any room</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <!-- Step 1 -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg text-center hover-scale">
+                    <div class="gradient-bg w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="text-white text-3xl font-bold">1</span>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4">Upload your picture</h3>
+                    <p class="text-gray-600 mb-6">Upload any room photo - empty, furnished, or cluttered.</p>
+                    <div class="text-purple-600">
+                        <i class="fas fa-cloud-upload-alt text-4xl"></i>
+                    </div>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg text-center hover-scale">
+                    <div class="gradient-bg w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="text-white text-3xl font-bold">2</span>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4">AI processes the image</h3>
+                    <p class="text-gray-600 mb-6">Our AI analyzes and stages the room in ~15 seconds.</p>
+                    <div class="text-purple-600">
+                        <i class="fas fa-brain text-4xl"></i>
+                    </div>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg text-center hover-scale">
+                    <div class="gradient-bg w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="text-white text-3xl font-bold">3</span>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4">Download the staged photo</h3>
+                    <p class="text-gray-600 mb-6">Get high-resolution, MLS-ready images instantly.</p>
+                    <div class="text-purple-600">
+                        <i class="fas fa-download text-4xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12">
+                <button class="gradient-bg text-white px-10 py-4 rounded-xl text-lg font-semibold hover:opacity-90 transition flex items-center mx-auto space-x-3">
+                    <i class="fas fa-play-circle"></i>
+                    <span>See How It Works (2 min video)</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Competitive Advantages -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-6">Why VirtualStagingAI is Better</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Compare with traditional staging and manual alternatives</p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Advantages List -->
+                    <div class="space-y-6">
+                        <div class="flex items-start">
+                            <i class="fas fa-bolt text-green-500 text-xl mt-1 mr-4"></i>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Instant results (~15s)</h3>
+                                <p class="text-gray-600">Traditional staging takes days or weeks</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-hand-sparkles text-green-500 text-xl mt-1 mr-4"></i>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Effortless staging</h3>
+                                <p class="text-gray-600">No physical labor or furniture rental</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-dollar-sign text-green-500 text-xl mt-1 mr-4"></i>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Cost-effective</h3>
+                                <p class="text-gray-600">90% cheaper than physical staging</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-infinity text-green-500 text-xl mt-1 mr-4"></i>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Unlimited regenerations</h3>
+                                <p class="text-gray-600">Try different styles until perfect</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-start">
+                            <i class="fas fa-robot text-green-500 text-xl mt-1 mr-4"></i>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Highly accurate AI</h3>
+                                <p class="text-gray-600">Trained on 1M+ interior images</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-file-contract text-green-500 text-xl mt-1 mr-4"></i>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">MLS compliant</h3>
+                                <p class="text-gray-600">Meets all real estate listing standards</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-mobile-alt text-green-500 text-xl mt-1 mr-4"></i>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Mobile-friendly</h3>
+                                <p class="text-gray-600">Stage directly from your phone</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-shield-alt text-green-500 text-xl mt-1 mr-4"></i>
+                            <div>
+                                <h3 class="text-xl font-semibold mb-2">Secure & private</h3>
+                                <p class="text-gray-600">Your images are never shared</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
+                <!-- Company -->
+                <div>
+                    <div class="flex items-center space-x-2 mb-6">
+                        <div class="gradient-bg w-8 h-8 rounded-lg"></div>
+                        <span class="text-xl font-bold">VirtualStagingAI</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">Transform empty rooms into dream spaces with AI-powered virtual staging.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-youtube text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin text-xl"></i></a>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">Navigation</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Home</a></li>
+                        <li><a href="#gallery" class="text-gray-400 hover:text-white">Gallery</a></li>
+                        <li><a href="#pricing" class="text-gray-400 hover:text-white">Pricing</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Log in</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Programs -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">Programs</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Affiliate Program</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Whitelabel Program</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">API Access</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Bulk Orders</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Enterprise</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Legal -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">Legal</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Refund Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Cookie Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">GDPR</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Newsletter -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">Stay Updated</h3>
+                    <p class="text-gray-400 mb-4">Get tips on virtual staging and real estate marketing.</p>
+                    <div class="flex">
+                        <input type="email" placeholder="Your email" class="bg-gray-800 text-white px-4 py-3 rounded-l-lg flex-grow focus:outline-none">
+                        <button class="gradient-bg px-4 py-3 rounded-r-lg font-medium hover:opacity-90">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pt-8 border-t border-gray-800 text-center text-gray-400">
+                <p>&copy; 2024 VirtualStagingAI.app. All rights reserved.</p>
+                <p class="mt-2 text-sm">Made with <i class="fas fa-heart text-red-500"></i> for real estate professionals worldwide</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Pricing Section (hidden by default, linked from navigation) -->
+    <section id="pricing" class="hidden py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-6">Simple, Transparent Pricing</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Pay per image, no subscriptions required</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <!-- Pricing Card 1 -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg text-center">
+                    <h3 class="text-2xl font-semibold mb-4">Pay As You Go</h3>
+                    <div class="text-5xl font-bold mb-6">$19<span class="text-xl text-gray-500">/image</span></div>
+                    <ul class="space-y-4 mb-8 text-left">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>1 image at a time</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>All design styles</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>High resolution</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>Furniture removal</span>
+                        </li>
+                    </ul>
+                    <button class="w-full bg-gray-100 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-200 transition">
+                        Get Started
+                    </button>
+                </div>
+                
+                <!-- Pricing Card 2 (Recommended) -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg text-center border-2 border-purple-500 relative">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                        MOST POPULAR
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4">Professional Pack</h3>
+                    <div class="text-5xl font-bold mb-6">$99<span class="text-xl text-gray-500">/10 images</span></div>
+                    <p class="text-gray-600 mb-6">$9.90 per image</p>
+                    <ul class="space-y-4 mb-8 text-left">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>10 images total</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>All design styles</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>High resolution</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>Multi-view staging</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>Priority processing</span>
+                        </li>
+                    </ul>
+                    <button class="w-full gradient-bg text-white py-3 rounded-lg font-semibold hover:opacity-90 transition">
+                        Choose Plan
+                    </button>
+                </div>
+                
+                <!-- Pricing Card 3 -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg text-center">
+                    <h3 class="text-2xl font-semibold mb-4">Agency Bundle</h3>
+                    <div class="text-5xl font-bold mb-6">$499<span class="text-xl text-gray-500">/100 images</span></div>
+                    <p class="text-gray-600 mb-6">$4.99 per image</p>
+                    <ul class="space-y-4 mb-8 text-left">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>100 images total</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>All design styles</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>Highest resolution</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>API access included</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>White label option</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-3"></i>
+                            <span>Dedicated support</span>
+                        </li>
+                    </ul>
+                    <button class="w-full bg-gray-100 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-200 transition">
+                        Contact Sales
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- JavaScript for interactive elements -->
+    <script>
+        // Before/After Slider
+        document.addEventListener('DOMContentLoaded', function() {
+            const slider = document.getElementById('slider');
+            const beforeImage = document.getElementById('before-image');
+            const afterImage = document.getElementById('after-image');
+            let isDragging = false;
+
+            if (slider && beforeImage && afterImage) {
+                slider.addEventListener('mousedown', function() {
+                    isDragging = true;
+                });
+
+                document.addEventListener('mousemove', function(e) {
+                    if (!isDragging) return;
+                    
+                    const container = slider.parentElement;
+                    const containerRect = container.getBoundingClientRect();
+                    let x = e.clientX - containerRect.left;
+                    
+                    // Keep slider within bounds
+                    x = Math.max(0, Math.min(x, containerRect.width));
+                    
+                    // Update slider position
+                    slider.style.left = x + 'px';
+                    
+                    // Update image widths
+                    const percentage = (x / containerRect.width) * 100;
+                    afterImage.style.width = percentage + '%';
+                });
+
+                document.addEventListener('mouseup', function() {
+                    isDragging = false;
+                });
+
+                // Touch events for mobile
+                slider.addEventListener('touchstart', function() {
+                    isDragging = true;
+                });
+
+                document.addEventListener('touchmove', function(e) {
+                    if (!isDragging) return;
+                    
+                    const container = slider.parentElement;
+                    const containerRect = container.getBoundingClientRect();
+                    let x = e.touches[0].clientX - containerRect.left;
+                    
+                    x = Math.max(0, Math.min(x, containerRect.width));
+                    slider.style.left = x + 'px';
+                    
+                    const percentage = (x / containerRect.width) * 100;
+                    afterImage.style.width = percentage + '%';
+                });
+
+                document.addEventListener('touchend', function() {
+                    isDragging = false;
+                });
+            }
+
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Show pricing section when clicking pricing link
+            document.querySelectorAll('a[href="#pricing"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const pricingSection = document.getElementById('pricing');
+                    if (pricingSection) {
+                        pricingSection.classList.remove('hidden');
+                        setTimeout(() => {
+                            window.scrollTo({
+                                top: pricingSection.offsetTop - 80,
+                                behavior: 'smooth'
+                            });
+                        }, 100);
+                    }
+                });
+            });
+        });
+    </script>
+</div>

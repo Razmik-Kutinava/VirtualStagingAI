@@ -1,0 +1,36 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full">
+    <div class="card">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Изменить пароль</h2>
+        <p class="text-gray-600">Введите новый пароль</p>
+      </div>
+
+      <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put, class: "space-y-6" }) do |f| %>
+        <%= render "devise/shared/error_messages", resource: resource %>
+        <%= f.hidden_field :reset_password_token %>
+
+        <div>
+          <%= f.label :password, "Новый пароль", class: "block text-sm font-medium text-gray-700 mb-2" %>
+          <% if @minimum_password_length %>
+            <p class="text-xs text-gray-500 mb-2">Минимум <%= @minimum_password_length %> символов</p>
+          <% end %>
+          <%= f.password_field :password, autofocus: true, autocomplete: "new-password", class: "input", placeholder: "Новый пароль" %>
+        </div>
+
+        <div>
+          <%= f.label :password_confirmation, "Подтверждение нового пароля", class: "block text-sm font-medium text-gray-700 mb-2" %>
+          <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "input", placeholder: "Подтвердите новый пароль" %>
+        </div>
+
+        <div>
+          <%= f.submit "Изменить пароль", class: "btn-primary w-full" %>
+        </div>
+      <% end %>
+
+      <div class="mt-6">
+        <%= render "devise/shared/links" %>
+      </div>
+    </div>
+  </div>
+</div>

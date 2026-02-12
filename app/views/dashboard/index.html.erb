@@ -1,0 +1,153 @@
+<% content_for :title, "Dashboard - VirtualStagingAI" %>
+
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+          <div class="gradient-bg w-10 h-10 rounded-lg flex-shrink-0"></div>
+          <%= link_to "VirtualStagingAI", root_path, class: "text-xl font-bold text-gray-900 hover:text-purple-600 transition-colors" %>
+        </div>
+        <div class="flex items-center space-x-6">
+          <%= link_to "My Photos", dashboard_path, class: "text-sm font-medium text-gray-700 hover:text-purple-600 transition-colors #{'text-purple-600 font-semibold border-b-2 border-purple-600 pb-1' if @folder == 'all'}" %>
+          <div class="relative" data-controller="dropdown">
+            <button class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors" data-action="click->dropdown#toggle" data-dropdown-target="button">
+              <span class="text-sm font-medium"><%= current_user.email %></span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50" data-dropdown-target="menu">
+              <%= link_to "Settings", edit_user_registration_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors" %>
+              <%= link_to "Logout", destroy_user_session_path, method: :delete, data: { turbo_method: :delete }, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors" %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-72 bg-white border-r border-gray-200 min-h-[calc(100vh-73px)]">
+      <div class="p-6">
+        <!-- Token Balance -->
+        <div class="mb-8 p-5 gradient-bg rounded-xl text-white shadow-lg">
+          <div class="text-xs font-medium opacity-90 mb-2 uppercase tracking-wide">Token Balance</div>
+          <div class="text-3xl font-bold mb-3"><%= @token_balance %></div>
+          <%= link_to "Top Up", "#", class: "inline-block text-sm font-medium underline opacity-90 hover:opacity-100 transition-opacity", data: { turbo: false } %>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="space-y-1.5">
+          <%= link_to dashboard_path(folder: "all"), 
+              class: "flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 #{'bg-purple-50 text-purple-700 shadow-sm' if @folder == 'all'} #{'text-gray-700 hover:bg-gray-50' unless @folder == 'all'}" do %>
+            <span class="font-medium">All Photos</span>
+            <span class="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"><%= @total_photos %></span>
+          <% end %>
+
+          <%= link_to dashboard_path(folder: "unfiled"), 
+              class: "flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 #{'bg-purple-50 text-purple-700 shadow-sm' if @folder == 'unfiled'} #{'text-gray-700 hover:bg-gray-50' unless @folder == 'unfiled'}" do %>
+            <span class="font-medium">Unfiled</span>
+            <span class="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"><%= @unfiled_count %></span>
+          <% end %>
+
+          <%= link_to dashboard_path(folder: "trash"), 
+              class: "flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 #{'bg-purple-50 text-purple-700 shadow-sm' if @folder == 'trash'} #{'text-gray-700 hover:bg-gray-50' unless @folder == 'trash'}" do %>
+            <span class="font-medium">Trash</span>
+            <span class="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"><%= @trash_count %></span>
+          <% end %>
+
+          <div class="pt-6 mt-6 border-t border-gray-200">
+            <div class="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">FOLDERS</div>
+            <div class="space-y-1">
+              <% @folders.each do |folder| %>
+                <%= link_to dashboard_path(folder: folder[:slug]), 
+                    class: "flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 #{'bg-purple-50 text-purple-700 shadow-sm' if @folder == folder[:slug]} #{'text-gray-700 hover:bg-gray-50' unless @folder == folder[:slug]}",
+                    data: { turbo_frame: "photos-grid" } do %>
+                  <div class="flex items-center space-x-3">
+                    <span class="text-lg"><%= folder[:icon] %></span>
+                    <span class="font-medium"><%= folder[:name] %></span>
+                  </div>
+                  <span class="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"><%= folder[:count] %></span>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8 bg-gray-50 min-h-[calc(100vh-73px)]">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-1">
+              <%= case @folder
+                  when "all" then "All Photos"
+                  when "unfiled" then "Unfiled"
+                  when "trash" then "Trash"
+                  else @folders.find { |f| f[:slug] == @folder }&.dig(:name) || "Photos"
+                  end %>
+            </h1>
+            <p class="text-sm text-gray-500">
+              <%= @images.count %> of <%= @total_photos %> photos
+            </p>
+          </div>
+          <%= link_to "Add Photo", new_project_path, class: "btn-primary px-6 py-3 text-sm font-semibold shadow-md hover:shadow-lg transition-all" %>
+        </div>
+
+        <!-- Photo Grid -->
+        <%= turbo_frame_tag "photos-grid" do %>
+          <% if @images.any? %>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <% @images.each do |image| %>
+                <%= render "dashboard/photo_card", image: image %>
+              <% end %>
+            </div>
+
+            <!-- Pagination -->
+            <% if @total_pages > 1 %>
+              <div class="mt-12 flex justify-center items-center space-x-2">
+                <% if @page > 1 %>
+                  <%= link_to "← Previous", dashboard_path(folder: @folder, page: @page - 1), 
+                      class: "px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm",
+                      data: { turbo_frame: "photos-grid" } %>
+                <% end %>
+                
+                <% start_page = [@page - 2, 1].max %>
+                <% end_page = [start_page + 4, @total_pages].min %>
+                <% (start_page..end_page).each do |page_num| %>
+                  <% if page_num == @page %>
+                    <span class="px-5 py-2.5 bg-purple-600 text-white rounded-lg text-sm font-semibold shadow-md"><%= page_num %></span>
+                  <% else %>
+                    <%= link_to page_num, dashboard_path(folder: @folder, page: page_num), 
+                        class: "px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm",
+                        data: { turbo_frame: "photos-grid" } %>
+                  <% end %>
+                <% end %>
+
+                <% if @page < @total_pages %>
+                  <%= link_to "Next →", dashboard_path(folder: @folder, page: @page + 1), 
+                      class: "px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm",
+                      data: { turbo_frame: "photos-grid" } %>
+                <% end %>
+              </div>
+            <% end %>
+          <% else %>
+            <!-- Empty State -->
+            <div class="text-center py-20 bg-white rounded-xl border-2 border-dashed border-gray-300">
+              <div class="text-gray-400 text-7xl mb-6">📷</div>
+              <h2 class="text-2xl font-bold text-gray-900 mb-2">Nothing here yet</h2>
+              <p class="text-gray-600 mb-8 max-w-md mx-auto">Start by uploading your first photo to begin creating stunning virtual staging</p>
+              <%= link_to "Add Photo", new_project_path, class: "btn-primary px-6 py-3 text-sm font-semibold shadow-md hover:shadow-lg transition-all inline-block" %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </main>
+  </div>
+</div>
+
