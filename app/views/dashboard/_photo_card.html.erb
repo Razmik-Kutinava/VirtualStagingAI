@@ -1,29 +1,68 @@
 <% styles_count = image.styles_count %>
-<%= link_to project_path(image), class: "group relative block bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-200" do %>
-  <div class="aspect-square relative overflow-hidden bg-gray-100">
-    <% if image.file.attached? %>
-      <%= image_tag image.file, class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300", alt: "Photo" %>
-    <% else %>
-      <div class="w-full h-full flex items-center justify-center text-gray-400 bg-gradient-to-br from-gray-50 to-gray-100">
-        <svg class="w-20 h-20 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-        </svg>
+<% is_trash = @folder == 'trash' %>
+<div class="group relative block print-card p-0 overflow-hidden border-2 transition-all" style="border-color: transparent;" id="image_<%= image.id %>">
+  <div class="aspect-square relative overflow-hidden" style="background: var(--panel-deep);">
+    <a href="#" onclick="openImageModal(<%= image.id %>); return false;" class="block w-full h-full cursor-pointer">
+      <% if image.file.attached? %>
+        <%= image_tag image.file, class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300", alt: "Photo" %>
+      <% else %>
+        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br" style="color: var(--text-muted); background: linear-gradient(to bottom right, var(--panel-deep), var(--panel-raise));">
+          <svg class="w-20 h-20 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+      <% end %>
+    </a>
+    
+    <% if styles_count > 0 %>
+      <div class="absolute top-3 right-3 badge-d3 z-10">
+        <%= styles_count %> <%= styles_count == 1 ? 'стиль' : 'стилей' %>
       </div>
     <% end %>
     
-    <% if styles_count > 0 %>
-      <div class="absolute top-3 right-3 bg-blue-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm bg-opacity-90">
-        <%= styles_count %> <%= styles_count == 1 ? 'style' : 'styles' %>
+    <!-- Кнопка удаления (показывается при hover, если не в корзине) -->
+    <% unless is_trash %>
+      <div class="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+        <%= button_to soft_delete_image_path(image), method: :patch, 
+            class: "w-10 h-10 flex items-center justify-center transition-all",
+            style: "background: var(--accent-electric); color: var(--ink); border-radius: 0;",
+            data: { turbo_method: :patch, turbo_confirm: "Переместить в корзину?" },
+            title: "Удалить",
+            onclick: "event.stopPropagation();" do %>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+          </svg>
+        <% end %>
       </div>
     <% end %>
   </div>
   
-  <div class="p-5">
-    <div class="text-sm font-semibold text-gray-900 truncate mb-1">
-      <%= image.room_type&.humanize || "Untitled" %>
+  <a href="#" onclick="openImageModal(<%= image.id %>); return false;" class="block cursor-pointer">
+    <div class="p-4 border-t" style="border-color: var(--border-sharp);">
+      <div class="text-sm font-semibold truncate mb-1" style="color: var(--text-primary);">
+        <%= image.folder&.name || image.project&.name || "Без названия" %>
+      </div>
+      <div class="text-xs font-medium" style="color: var(--text-muted);">
+        <%= image.created_at.strftime("%d.%m.%Y") %>
+      </div>
     </div>
-    <div class="text-xs text-gray-500 font-medium">
-      <%= image.created_at.strftime("%B %d, %Y") %>
+  </a>
+  
+  <!-- Кнопки действий для корзины -->
+  <% if is_trash %>
+    <div class="px-2.5 py-2 border-t flex justify-center items-center gap-2.5" style="border-color: var(--border-sharp);">
+      <%= button_to restore_image_path(image), method: :patch,
+          class: "px-3 py-2 text-xs font-semibold uppercase transition-all text-center",
+          style: "background: var(--accent-electric); color: var(--ink); border-radius: 0; width: 115px;",
+          data: { turbo_method: :patch } do %>
+        Восстановить
+      <% end %>
+      <%= button_to image_path(image), method: :delete,
+          class: "px-3 py-2 text-xs font-semibold uppercase transition-all text-center",
+          style: "background: var(--accent-blue); color: var(--text-primary); border-radius: 0; width: 115px;",
+          data: { turbo_method: :delete, turbo_confirm: "Удалить навсегда? Это действие нельзя отменить." } do %>
+        Удалить
+      <% end %>
     </div>
-  </div>
-<% end %>
+  <% end %>
+</div>

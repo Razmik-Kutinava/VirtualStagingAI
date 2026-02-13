@@ -24,10 +24,25 @@ Rails.application.routes.draw do
   
   # Dashboard routes
   get "dashboard", to: "dashboard#index", as: :dashboard
-  get "dashboard/:folder", to: "dashboard#index", as: :dashboard_folder, constraints: { folder: /all|unfiled|trash|living_room|bedroom|dining_room|kitchen|bathroom|office|main_area/ }
+  get "dashboard/:folder", to: "dashboard#index", as: :dashboard_folder
+  # folder может быть: "all", "unfiled", "trash" или ID папки (число)
   
-  # Projects routes (для будущего расширения)
-  resources :projects, only: [:show, :new, :create] do
+  # Projects routes
+  resources :projects, only: [:index, :show, :new, :create, :destroy] do
     resources :images, only: [:show]
+    collection do
+      get :new_project
+      post :create_project
+    end
+  end
+  
+  # Images actions (удаление, восстановление, модалка)
+  resources :images, only: [] do
+    member do
+      patch :soft_delete
+      patch :restore
+      delete :destroy
+      get :modal
+    end
   end
 end

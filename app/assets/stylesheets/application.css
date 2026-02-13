@@ -10,4 +10,4 @@
  */
 
 /* Дизайн-система VirtualStagingAI */
-@import 'design_system';
+/* Propshaft не поддерживает @import, поэтому используем прямой путь */

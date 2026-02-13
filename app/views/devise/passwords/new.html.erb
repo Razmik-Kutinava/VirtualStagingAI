@@ -1,21 +1,121 @@
-<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+<% content_for :head do %>
+    <!-- Space Grotesk — наш фирменный -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --pink: #ff3b7f;
+            --cyan: #00f7f6;
+            --yellow: #ffe600;
+            --magenta: #c724b1;
+            --chrome: #0b0d10;
+            --bg-deep: #0b0d10;
+            --bg-card: #12161c;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif !important;
+            background: var(--bg-deep) !important;
+            color: #ffffff !important;
+            letter-spacing: -0.01em;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="1"/><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.15 0"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.045"/></svg>');
+            opacity: 0.25;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: overlay;
+        }
+
+        .neon-pink {
+            color: var(--pink);
+            text-shadow: 0 0 8px var(--pink), 0 0 20px rgba(255, 59, 127, 0.5);
+        }
+        .neon-cyan {
+            color: var(--cyan);
+            text-shadow: 0 0 8px var(--cyan), 0 0 20px rgba(0, 247, 246, 0.4);
+        }
+
+        .print-card {
+            background: var(--bg-card);
+            border: 1px solid #2a2e38;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.8);
+            transition: border 0.2s, box-shadow 0.3s, transform 0.25s cubic-bezier(0.2, 0.95, 0.4, 1);
+        }
+        .print-card:hover {
+            border: 1px solid var(--pink);
+            box-shadow: 0 25px 40px -12px #ff3b7f80, 0 0 0 1px #ff3b7f inset;
+        }
+
+        .btn-flash {
+            background: var(--yellow);
+            color: #0b0d10;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 2px;
+            box-shadow: 6px 6px 0 var(--pink);
+            transition: 0.1s linear;
+            border: none;
+            padding: 12px 24px;
+        }
+        .btn-flash:hover {
+            background: #fff150;
+            box-shadow: 3px 3px 0 var(--magenta);
+            transform: translate(3px, 3px);
+        }
+
+        .input-neon {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1a1d24;
+            border: 2px solid #2a2e38;
+            color: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+            border-radius: 2px;
+            transition: all 0.2s;
+        }
+        .input-neon:focus {
+            outline: none;
+            border-color: var(--cyan);
+            box-shadow: 0 0 8px rgba(0, 247, 246, 0.3);
+        }
+
+        .vhs-bg {
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(255,255,255,0.02) 1px, transparent 2px);
+        }
+    </style>
+<% end %>
+
+<div class="vhs-bg min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
   <div class="max-w-md w-full">
-    <div class="card">
+    <div class="print-card p-8">
       <div class="text-center mb-8">
-        <h2 class="text-3xl font-bold text-gray-800 mb-2">Восстановление пароля</h2>
-        <p class="text-gray-600">Введите email для получения инструкций</p>
+        <%= link_to root_path, class: "inline-block mb-6" do %>
+          <div class="flex items-center justify-center space-x-3">
+            <div class="w-10 h-10 bg-[#ffe600] rotate-12 shadow-[4px_4px_0_#ff3b7f]"></div>
+            <span class="text-2xl font-black text-white tracking-tight" style="text-shadow: 2px 2px 0 #ff3b7f;">VSAI</span>
+          </div>
+        <% end %>
+        <h2 class="text-3xl font-black uppercase mb-2 neon-pink">ВОССТАНОВЛЕНИЕ ПАРОЛЯ</h2>
+        <p class="text-white/60">Введите email для получения инструкций</p>
       </div>
 
       <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post, class: "space-y-6" }) do |f| %>
         <%= render "devise/shared/error_messages", resource: resource %>
 
         <div>
-          <%= f.label :email, "Email", class: "block text-sm font-medium text-gray-700 mb-2" %>
-          <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "input", placeholder: "your@email.com" %>
+          <%= f.label :email, "EMAIL", class: "block text-xs font-bold text-white/60 uppercase tracking-wider mb-2" %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "input-neon", placeholder: "your@email.com" %>
         </div>
 
         <div>
-          <%= f.submit "Отправить инструкции", class: "btn-primary w-full" %>
+          <%= f.submit "ОТПРАВИТЬ ИНСТРУКЦИИ", class: "btn-flash w-full text-sm py-3" %>
         </div>
       <% end %>
 

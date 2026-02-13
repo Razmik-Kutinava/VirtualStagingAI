@@ -1,0 +1,187 @@
+<!-- Модальное окно для просмотра изображения -->
+<div id="image-modal-<%= @image.id %>" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto" style="background: rgba(3, 5, 10, 0.95); backdrop-filter: blur(8px);" onclick="if(event.target === this) closeImageModal(<%= @image.id %>)">
+  <div class="print-card w-full max-w-6xl mx-4 my-8" style="background: var(--panel-raise); border: 2px solid var(--accent-electric); max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation()">
+    <!-- Заголовок -->
+    <div class="flex items-center justify-between px-6 py-4 border-b sticky top-0" style="background: var(--panel-raise); border-color: var(--border-sharp); z-index: 10;">
+      <h2 class="text-xl font-semibold uppercase tracking-tight neon-electric">
+        <%= @image.folder&.name || @image.project&.name || "ИЗОБРАЖЕНИЕ" %>
+      </h2>
+      <button onclick="closeImageModal(<%= @image.id %>)" class="text-3xl font-bold hover:text-[var(--accent-blue)] transition-colors" style="color: var(--text-muted);" aria-label="Закрыть">
+        ×
+      </button>
+    </div>
+
+    <div class="p-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Основное изображение -->
+        <div class="lg:col-span-2">
+          <div class="print-card p-4" style="background: var(--panel-deep);">
+            <div class="aspect-video relative overflow-hidden bg-[#1a1d24]">
+              <% if @image.file.attached? %>
+                <%= image_tag @image.file, class: "w-full h-full object-contain", alt: "Uploaded photo" %>
+              <% else %>
+                <div class="w-full h-full flex items-center justify-center text-white/40">
+                  <svg class="w-24 h-24 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+              <% end %>
+            </div>
+
+            <div class="mt-4">
+              <h3 class="text-lg font-semibold uppercase mb-2 neon-electric">
+                <%= @image.folder&.name || @image.project&.name || "БЕЗ НАЗВАНИЯ" %>
+              </h3>
+              <p class="text-sm" style="color: var(--text-muted);">
+                Загружено <%= @image.created_at.strftime("%d %B %Y в %H:%M") %>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar с информацией и действиями -->
+        <div class="space-y-4">
+          <!-- Информация -->
+          <div class="print-card p-4" style="background: var(--panel-deep);">
+            <h3 class="text-sm font-semibold uppercase mb-3 neon-electric">ИНФОРМАЦИЯ</h3>
+            <div class="space-y-3">
+              <div>
+                <span class="text-xs uppercase block mb-1" style="color: var(--text-muted);">Папка:</span>
+                <p class="text-sm font-semibold" style="color: var(--text-primary);">
+                  <%= @image.folder&.name || "Не указана" %>
+                </p>
+              </div>
+              <div>
+                <span class="text-xs uppercase block mb-1" style="color: var(--text-muted);">Проект:</span>
+                <p class="text-sm font-semibold" style="color: var(--text-primary);">
+                  <%= @image.project&.name || "Не указан" %>
+                </p>
+              </div>
+              <div>
+                <span class="text-xs uppercase block mb-1" style="color: var(--text-muted);">Стилей создано:</span>
+                <p class="text-sm font-semibold neon-electric">
+                  <%= @image.styles_count %>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Действия -->
+          <div class="print-card p-4" style="background: var(--panel-deep);">
+            <h3 class="text-sm font-semibold uppercase mb-3 neon-electric">ДЕЙСТВИЯ</h3>
+            <div class="space-y-2">
+              <% if @image.deleted_at.nil? %>
+                <!-- Кнопка удаления (если не в корзине) -->
+                <%= form_with url: soft_delete_image_path(@image), method: :patch, local: true, data: { turbo: false }, class: "w-full", onsubmit: "handleImageDelete(event, #{@image.id})" do |f| %>
+                  <%= f.submit "🗑️ УДАЛИТЬ", 
+                      class: "w-full px-4 py-2 text-xs font-semibold uppercase transition-all",
+                      style: "background: var(--accent-blue); color: var(--text-primary); border-radius: 0;",
+                      onclick: "return confirm('Переместить в корзину?');" %>
+                <% end %>
+              <% else %>
+                <!-- Кнопки для корзины -->
+                <%= button_to restore_image_path(@image), method: :patch,
+                    class: "w-full px-4 py-2 text-xs font-semibold uppercase transition-all",
+                    style: "background: var(--accent-electric); color: var(--ink); border-radius: 0;",
+                    data: { turbo_method: :patch },
+                    onclick: "handleImageRestore(event, #{@image.id})" do %>
+                  ↻ ВОССТАНОВИТЬ
+                <% end %>
+                <%= button_to image_path(@image), method: :delete,
+                    class: "w-full px-4 py-2 text-xs font-semibold uppercase transition-all mt-2",
+                    style: "background: var(--accent-blue); color: var(--text-primary); border-radius: 0;",
+                    data: { turbo_method: :delete },
+                    onclick: "return confirm('Удалить навсегда? Это действие нельзя отменить.');" do %>
+                  ⚠️ УДАЛИТЬ НАВСЕГДА
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Создать стиль -->
+          <div class="print-card p-4" style="background: var(--panel-deep);">
+            <h3 class="text-sm font-semibold uppercase mb-3 neon-electric">СОЗДАТЬ СТИЛЬ</h3>
+            <p class="text-xs mb-3" style="color: var(--text-muted);">
+              Выберите стиль для генерации виртуального стайлинга
+            </p>
+            <%= link_to "#", class: "w-full px-4 py-2 text-xs font-semibold uppercase text-center block transition-all", 
+                style: "background: var(--accent-electric); color: var(--ink); border-radius: 0;",
+                data: { turbo: false } do %>
+              ВЫБРАТЬ СТИЛЬ
+            <% end %>
+          </div>
+
+          <!-- Сгенерированные стили -->
+          <% if @generations.any? %>
+            <div class="print-card p-4" style="background: var(--panel-deep);">
+              <h3 class="text-sm font-semibold uppercase mb-3 neon-electric">СГЕНЕРИРОВАННЫЕ СТИЛИ</h3>
+              <div class="space-y-2">
+                <% @generations.each do |generation| %>
+                  <div class="p-3 border" style="background: var(--panel-raise); border-color: var(--border-sharp);">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-xs font-semibold" style="color: var(--text-primary);">
+                        <%= generation.style.name %>
+                      </span>
+                      <span class="px-2 py-1 text-xs font-semibold uppercase <%= generation.status == 'succeeded' ? 'bg-[rgba(0,224,255,0.2)] text-[var(--accent-electric)] border border-[var(--accent-electric)]' : generation.status == 'failed' ? 'bg-[rgba(255,59,127,0.2)] text-[#ff3b7f] border border-[#ff3b7f]' : 'bg-[rgba(255,230,0,0.2)] text-[#ffe600] border border-[#ffe600]' %>">
+                        <%= generation.status.humanize %>
+                      </span>
+                    </div>
+                    <% if generation.output_image&.file&.attached? %>
+                      <div class="block mt-2">
+                        <%= image_tag generation.output_image.file, class: "w-full h-24 object-cover" %>
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function closeImageModal(imageId) {
+    const modal = document.getElementById('image-modal-' + imageId);
+    if (modal) {
+      modal.style.opacity = '0';
+      modal.style.transition = 'opacity 0.2s ease-out';
+      setTimeout(() => {
+        modal.remove();
+      }, 200);
+    }
+  }
+
+  // Обработка удаления изображения
+  function handleImageDelete(event, imageId) {
+    if (confirm('Переместить в корзину?')) {
+      // Закрываем модалку перед удалением
+      closeImageModal(imageId);
+      // Форма отправится автоматически
+      return true;
+    }
+    event.preventDefault();
+    return false;
+  }
+
+  // Обработка восстановления изображения
+  function handleImageRestore(event, imageId) {
+    // Закрываем модалку перед восстановлением
+    closeImageModal(imageId);
+    // Форма отправится автоматически
+    return true;
+  }
+
+  // Закрытие по Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const modals = document.querySelectorAll('[id^="image-modal-"]');
+      modals.forEach(modal => {
+        const imageId = modal.id.replace('image-modal-', '');
+        closeImageModal(imageId);
+      });
+    }
+  });
+</script>

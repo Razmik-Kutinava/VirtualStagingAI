@@ -1,102 +1,226 @@
 <% content_for :title, "Просмотр фото - VirtualStagingAI" %>
 
-<div class="min-h-screen bg-gray-50">
+<% content_for :head do %>
+    <!-- Space Grotesk — наш фирменный -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --pink: #ff3b7f;
+            --cyan: #00f7f6;
+            --yellow: #ffe600;
+            --magenta: #c724b1;
+            --bg-deep: #0b0d10;
+            --bg-card: #12161c;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-deep) !important;
+            color: #ffffff !important;
+        }
+
+        .print-card {
+            background: var(--bg-card);
+            border: 1px solid #2a2e38;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.8);
+        }
+
+        .btn-flash {
+            background: var(--yellow);
+            color: #0b0d10;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 2px;
+            box-shadow: 6px 6px 0 var(--pink);
+            transition: 0.1s linear;
+            border: none;
+            padding: 12px 24px;
+        }
+        .btn-flash:hover {
+            background: #fff150;
+            box-shadow: 3px 3px 0 var(--magenta);
+            transform: translate(3px, 3px);
+        }
+
+        .btn-outlined {
+            background: transparent;
+            color: var(--cyan);
+            border: 2px solid var(--cyan);
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-radius: 2px;
+            transition: all 0.2s;
+            padding: 12px 24px;
+        }
+        .btn-outlined:hover {
+            background: rgba(0, 247, 246, 0.1);
+            border-color: #00ffff;
+            color: #00ffff;
+            box-shadow: 0 0 12px rgba(0, 247, 246, 0.4);
+        }
+
+        .btn-danger {
+            background: var(--pink);
+            color: #ffffff;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-radius: 2px;
+            transition: all 0.2s;
+            padding: 12px 24px;
+        }
+        .btn-danger:hover {
+            background: #ff1a5c;
+            box-shadow: 0 0 12px rgba(255, 59, 127, 0.4);
+        }
+
+        .neon-pink {
+            color: var(--pink);
+            text-shadow: 0 0 8px var(--pink), 0 0 20px rgba(255, 59, 127, 0.5);
+        }
+        .neon-cyan {
+            color: var(--cyan);
+            text-shadow: 0 0 8px var(--cyan), 0 0 20px rgba(0, 247, 246, 0.4);
+        }
+        .neon-yellow {
+            color: var(--yellow);
+            text-shadow: 0 0 8px var(--yellow), 0 0 20px rgba(255, 230, 0, 0.4);
+        }
+    </style>
+<% end %>
+
+<div class="min-h-screen" style="background: var(--bg-deep);">
   <!-- Header -->
-  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
-    <div class="container mx-auto px-4 py-4">
-      <div class="flex justify-between items-center">
-        <div class="flex items-center space-x-2">
-          <div class="gradient-bg w-8 h-8 rounded-lg"></div>
-          <%= link_to "VirtualStagingAI", root_path, class: "text-xl font-bold text-gray-800" %>
-        </div>
-        <div class="flex items-center space-x-4">
-          <%= link_to "My Photos", dashboard_path, class: "text-gray-600 hover:text-purple-600 font-medium" %>
-          <%= link_to "Dashboard", dashboard_path, class: "btn-secondary" %>
-        </div>
-      </div>
+  <header class="print-card flex-shrink-0 flex justify-between items-center px-8 py-4 border-b border-[#ff3b7f]/30" style="background: #0f1116; border-bottom: 1px solid rgba(255,59,127,0.2);">
+    <div class="flex items-center space-x-4">
+      <%= link_to root_path, class: "flex items-center space-x-3" do %>
+        <div class="w-8 h-8 bg-[#ffe600] rotate-12 shadow-[4px_4px_0_#ff3b7f]"></div>
+        <span class="text-2xl font-black text-white tracking-tight" style="text-shadow: 2px 2px 0 #ff3b7f;">VSAI</span>
+      <% end %>
+      <span class="text-white/40">/</span>
+      <%= link_to "МОИ ФОТО", dashboard_path, class: "text-white/80 hover:text-[#00f7f6] font-bold uppercase text-sm transition-colors" %>
+    </div>
+    <div class="flex items-center space-x-4">
+      <%= link_to dashboard_path, class: "btn-outlined text-xs py-2 px-4" do %>
+        ← НАЗАД
+      <% end %>
     </div>
   </header>
 
-  <div class="container mx-auto px-4 py-8">
-    <div class="mb-6">
-      <%= link_to "← Назад к галерее", dashboard_path, class: "text-gray-600 hover:text-gray-800 font-medium" %>
-    </div>
-
+  <div class="container mx-auto px-4 py-8 max-w-7xl">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Основное изображение -->
       <div class="lg:col-span-2">
-        <div class="card">
-          <div class="aspect-video relative overflow-hidden bg-gray-100 rounded-lg">
+        <div class="print-card p-6">
+          <div class="aspect-video relative overflow-hidden bg-[#1a1d24] rounded">
             <% if @image.file.attached? %>
               <%= image_tag @image.file, class: "w-full h-full object-contain", alt: "Uploaded photo" %>
             <% else %>
-              <div class="w-full h-full flex items-center justify-center text-gray-400">
-                <svg class="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="w-full h-full flex items-center justify-center text-white/40">
+                <svg class="w-24 h-24 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
               </div>
             <% end %>
           </div>
 
-          <div class="mt-4">
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">
-              <%= @image.room_type&.humanize || "Без названия" %>
+          <div class="mt-6">
+            <h2 class="text-2xl font-black uppercase mb-2 neon-pink">
+              <%= @image.folder&.name || @image.project&.name || "БЕЗ НАЗВАНИЯ" %>
             </h2>
-            <p class="text-sm text-gray-500">
+            <p class="text-sm text-white/60">
               Загружено <%= @image.created_at.strftime("%d %B %Y в %H:%M") %>
             </p>
           </div>
         </div>
       </div>
 
-      <!-- Sidebar с информацией и стилями -->
+      <!-- Sidebar с информацией и действиями -->
       <div class="space-y-6">
         <!-- Информация -->
-        <div class="card">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Информация</h3>
-          <div class="space-y-3">
+        <div class="print-card p-6">
+          <h3 class="text-lg font-black uppercase mb-4 neon-cyan">ИНФОРМАЦИЯ</h3>
+          <div class="space-y-4">
             <div>
-              <span class="text-sm text-gray-500">Тип комнаты:</span>
-              <p class="text-sm font-medium text-gray-800">
-                <%= @image.room_type&.humanize || "Не указан" %>
+              <span class="text-xs text-white/60 uppercase tracking-wider block mb-1">Папка:</span>
+              <p class="text-sm font-bold text-white">
+                <%= @image.folder&.name || "Не указана" %>
               </p>
             </div>
             <div>
-              <span class="text-sm text-gray-500">Стилей создано:</span>
-              <p class="text-sm font-medium text-gray-800">
+              <span class="text-xs text-white/60 uppercase tracking-wider block mb-1">Проект:</span>
+              <p class="text-sm font-bold text-white">
+                <%= @image.project&.name || "Не указан" %>
+              </p>
+            </div>
+            <div>
+              <span class="text-xs text-white/60 uppercase tracking-wider block mb-1">Стилей создано:</span>
+              <p class="text-sm font-bold neon-yellow">
                 <%= @image.styles_count %>
               </p>
             </div>
           </div>
         </div>
 
+        <!-- Действия -->
+        <div class="print-card p-6">
+          <h3 class="text-lg font-black uppercase mb-4 neon-cyan">ДЕЙСТВИЯ</h3>
+          <div class="space-y-3">
+            <% if @image.deleted_at.nil? %>
+              <!-- Кнопка удаления (если не в корзине) -->
+              <%= form_with url: soft_delete_image_path(@image), method: :patch, local: true, data: { turbo: false }, class: "w-full" do |f| %>
+                <%= f.submit "🗑️ УДАЛИТЬ", 
+                    class: "btn-danger w-full text-sm py-3",
+                    onclick: "return confirm('Переместить в корзину?');" %>
+              <% end %>
+            <% else %>
+              <!-- Кнопки для корзины -->
+              <%= button_to restore_image_path(@image), method: :patch,
+                  class: "btn-outlined w-full text-sm py-3",
+                  data: { turbo_method: :patch } do %>
+                ↻ ВОССТАНОВИТЬ
+              <% end %>
+              <%= button_to image_path(@image), method: :delete,
+                  class: "btn-danger w-full text-sm py-3",
+                  data: { turbo_method: :delete, turbo_confirm: "Удалить навсегда? Это действие нельзя отменить." } do %>
+                ⚠️ УДАЛИТЬ НАВСЕГДА
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+
         <!-- Создать стиль -->
-        <div class="card">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Создать стиль</h3>
-          <p class="text-sm text-gray-600 mb-4">
+        <div class="print-card p-6">
+          <h3 class="text-lg font-black uppercase mb-4 neon-cyan">СОЗДАТЬ СТИЛЬ</h3>
+          <p class="text-sm text-white/60 mb-4">
             Выберите стиль для генерации виртуального стайлинга
           </p>
-          <%= link_to "Выбрать стиль", "#", class: "btn-primary w-full", data: { turbo: false } %>
+          <%= link_to "#", class: "btn-flash w-full text-sm py-3 text-center block", data: { turbo: false } do %>
+            ВЫБРАТЬ СТИЛЬ
+          <% end %>
         </div>
 
         <!-- Сгенерированные стили -->
         <% if @generations.any? %>
-          <div class="card">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Сгенерированные стили</h3>
+          <div class="print-card p-6">
+            <h3 class="text-lg font-black uppercase mb-4 neon-cyan">СГЕНЕРИРОВАННЫЕ СТИЛИ</h3>
             <div class="space-y-3">
               <% @generations.each do |generation| %>
-                <div class="p-3 bg-gray-50 rounded-lg">
+                <div class="p-4 bg-[#1a1d24] border border-[#2a2e38]">
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-gray-800">
+                    <span class="text-sm font-bold text-white">
                       <%= generation.style.name %>
                     </span>
-                    <span class="badge-<%= generation.status == 'succeeded' ? 'success' : generation.status == 'failed' ? 'error' : 'info' %>">
+                    <span class="px-2 py-1 text-xs font-bold uppercase <%= generation.status == 'succeeded' ? 'bg-[#00f7f6]/20 text-[#00f7f6] border border-[#00f7f6]' : generation.status == 'failed' ? 'bg-[#ff3b7f]/20 text-[#ff3b7f] border border-[#ff3b7f]' : 'bg-[#ffe600]/20 text-[#ffe600] border border-[#ffe600]' %>">
                       <%= generation.status.humanize %>
                     </span>
                   </div>
                   <% if generation.output_image&.file&.attached? %>
-                    <div class="block">
-                      <%= image_tag generation.output_image.file, class: "w-full h-32 object-cover rounded-lg" %>
+                    <div class="block mt-2">
+                      <%= image_tag generation.output_image.file, class: "w-full h-32 object-cover" %>
                     </div>
                   <% end %>
                 </div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_07_160114) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_13_150000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -39,6 +39,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_07_160114) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "favorites", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "generation_id", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["generation_id"], name: "index_favorites_on_generation_id"
+    t.index ["user_id", "generation_id"], name: "index_favorites_on_user_id_and_generation_id", unique: true
+    t.index ["user_id"], name: "index_favorites_on_user_id"
+  end
+
+  create_table "folders", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "icon"
+    t.string "name", null: false
+    t.integer "project_id", null: false
+    t.integer "sort_order", default: 0
+    t.datetime "updated_at", null: false
+    t.index ["project_id"], name: "index_folders_on_project_id"
+  end
+
   create_table "generations", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "error"
@@ -46,6 +66,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_07_160114) do
     t.integer "output_image_id"
     t.string "status", default: "queued"
     t.integer "style_id", null: false
+    t.integer "tokens_spent", default: 1, null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.index ["input_image_id"], name: "index_generations_on_input_image_id"
@@ -57,11 +78,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_07_160114) do
   create_table "images", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "deleted_at"
+    t.integer "folder_id"
     t.string "kind", null: false
     t.json "metadata"
-    t.string "room_type"
+    t.integer "project_id"
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.index ["folder_id"], name: "index_images_on_folder_id"
+    t.index ["project_id"], name: "index_images_on_project_id"
     t.index ["user_id"], name: "index_images_on_user_id"
   end
 
@@ -84,6 +108,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_07_160114) do
     t.index ["user_id"], name: "index_payments_on_user_id"
   end
 
+  create_table "projects", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.string "property_address"
+    t.string "property_type"
+    t.string "status", default: "active"
+    t.text "thumbnail_url"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["user_id"], name: "index_projects_on_user_id"
+  end
+
   create_table "styles", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name"
@@ -94,6 +131,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_07_160114) do
   create_table "token_packages", force: :cascade do |t|
     t.boolean "active", default: true
     t.datetime "created_at", null: false
+    t.text "description"
     t.string "name"
     t.integer "price_cents"
     t.integer "tokens_amount"
@@ -145,13 +183,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_07_160114) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "favorites", "generations"
+  add_foreign_key "favorites", "users"
+  add_foreign_key "folders", "projects"
   add_foreign_key "generations", "images", column: "input_image_id"
   add_foreign_key "generations", "images", column: "output_image_id"
   add_foreign_key "generations", "styles"
   add_foreign_key "generations", "users"
+  add_foreign_key "images", "folders"
+  add_foreign_key "images", "projects"
   add_foreign_key "images", "users"
   add_foreign_key "payments", "token_packages"
   add_foreign_key "payments", "users"
+  add_foreign_key "projects", "users"
   add_foreign_key "token_purchases", "token_packages"
   add_foreign_key "token_purchases", "users"
   add_foreign_key "token_transactions", "generations"

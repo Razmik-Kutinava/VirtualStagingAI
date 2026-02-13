@@ -1,44 +1,481 @@
 <% content_for :title, "Загрузить фото - VirtualStagingAI" %>
 
-<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+<% content_for :head do %>
+    <!-- Space Grotesk — наш фирменный -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --pink: #ff3b7f;
+            --cyan: #00f7f6;
+            --yellow: #ffe600;
+            --magenta: #c724b1;
+            --bg-deep: #0b0d10;
+            --bg-card: #12161c;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-deep) !important;
+            color: #ffffff !important;
+        }
+
+        .print-card {
+            background: var(--bg-card);
+            border: 1px solid #2a2e38;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.8);
+        }
+
+        .btn-flash {
+            background: var(--yellow);
+            color: #0b0d10;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 2px;
+            box-shadow: 6px 6px 0 var(--pink);
+            transition: 0.1s linear;
+            border: none;
+            padding: 12px 24px;
+        }
+        .btn-flash:hover {
+            background: #fff150;
+            box-shadow: 3px 3px 0 var(--magenta);
+            transform: translate(3px, 3px);
+        }
+
+        .btn-outlined {
+            background: transparent;
+            color: var(--cyan);
+            border: 2px solid var(--cyan);
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-radius: 2px;
+            transition: all 0.2s;
+            padding: 12px 24px;
+        }
+        .btn-outlined:hover {
+            background: rgba(0, 247, 246, 0.1);
+            border-color: #00ffff;
+            color: #00ffff;
+            box-shadow: 0 0 12px rgba(0, 247, 246, 0.4);
+        }
+
+        .input-neon {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1a1d24;
+            border: 2px solid #2a2e38;
+            color: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+            border-radius: 2px;
+            transition: all 0.2s;
+        }
+        .input-neon:focus {
+            outline: none;
+            border-color: var(--cyan);
+            box-shadow: 0 0 8px rgba(0, 247, 246, 0.3);
+        }
+
+        /* Drag and drop зона */
+        .drop-zone {
+            border: 3px dashed #2a2e38;
+            border-radius: 2px;
+            transition: all 0.3s;
+            background: #1a1d24;
+        }
+        .drop-zone.dragover {
+            border-color: var(--cyan);
+            background: rgba(0, 247, 246, 0.1);
+            box-shadow: 0 0 20px rgba(0, 247, 246, 0.3);
+        }
+        .drop-zone.has-file {
+            border-color: var(--yellow);
+            background: rgba(255, 230, 0, 0.1);
+        }
+
+        /* Скрываем стандартный file input */
+        .file-input-wrapper {
+            position: relative;
+        }
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .neon-pink {
+            color: var(--pink);
+            text-shadow: 0 0 8px var(--pink), 0 0 20px rgba(255, 59, 127, 0.5);
+        }
+        .neon-cyan {
+            color: var(--cyan);
+            text-shadow: 0 0 8px var(--cyan), 0 0 20px rgba(0, 247, 246, 0.4);
+        }
+    </style>
+<% end %>
+
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8" style="background: var(--bg-deep);">
   <div class="max-w-2xl mx-auto">
-    <div class="card">
+    <div class="print-card p-8">
       <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-2">Загрузить фото</h1>
-        <p class="text-gray-600">Выберите изображение для виртуального стайлинга</p>
+        <%= link_to dashboard_path, class: "inline-block mb-6" do %>
+          <div class="flex items-center justify-center space-x-3">
+            <div class="w-10 h-10 bg-[#ffe600] rotate-12 shadow-[4px_4px_0_#ff3b7f]"></div>
+            <span class="text-2xl font-black text-white tracking-tight" style="text-shadow: 2px 2px 0 #ff3b7f;">VSAI</span>
+          </div>
+        <% end %>
+        <h1 class="text-3xl font-black uppercase mb-2 neon-pink">ЗАГРУЗИТЬ ФОТО</h1>
+        <p class="text-white/60">Выберите изображение для виртуального стайлинга</p>
       </div>
 
-      <%= form_with model: @image, url: projects_path, method: :post, multipart: true, class: "space-y-6" do |f| %>
+      <%= form_with model: @image, url: projects_path, method: :post, multipart: true, class: "space-y-6", data: { turbo: false }, id: "uploadForm" do |f| %>
         <%= render "shared/error_messages", resource: @image %>
 
-        <div>
-          <%= f.label :file, "Файл изображения", class: "block text-sm font-medium text-gray-700 mb-2" %>
-          <%= f.file_field :file, accept: "image/*", class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-500 file:text-white hover:file:bg-primary-600 cursor-pointer", required: true %>
-          <p class="mt-1 text-xs text-gray-500">Поддерживаются форматы: JPG, PNG, WebP</p>
+        <!-- Drag and Drop зона -->
+        <div class="file-input-wrapper">
+          <div class="drop-zone p-12 text-center cursor-pointer relative" id="dropZone">
+            <div id="dropZoneContent">
+              <div class="text-6xl mb-4">📷</div>
+              <p class="text-white/80 font-bold text-lg mb-2">Перетащите фото сюда</p>
+              <p class="text-white/50 text-sm mb-4">или</p>
+              <button type="button" class="btn-outlined inline-block" id="selectFileBtn">ВЫБРАТЬ ФАЙЛ</button>
+              <p class="text-white/40 text-xs mt-4">Поддерживаются: JPG, PNG, WebP</p>
+            </div>
+            <div id="fileInfo" class="hidden">
+              <div class="mb-4">
+                <img id="filePreview" src="" alt="Preview" class="max-w-full max-h-64 mx-auto rounded" style="display: none;">
+                <div id="fileIcon" class="text-4xl">✅</div>
+              </div>
+              <p class="text-white font-bold text-lg mb-2" id="fileName"></p>
+              <p class="text-white/60 text-sm mb-4" id="fileSize"></p>
+              <div class="flex items-center justify-center gap-4">
+                <button type="button" class="text-[#ff3b7f] text-sm font-bold uppercase hover:text-[#ff1a5c] transition-colors" id="removeFile">🗑️ Удалить</button>
+              </div>
+            </div>
+            <%= f.file_field :file, accept: "image/*", class: "absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10", required: true, id: "fileInput" %>
+          </div>
         </div>
 
         <div>
-          <%= f.label :room_type, "Тип комнаты", class: "block text-sm font-medium text-gray-700 mb-2" %>
-          <%= f.select :room_type, 
-              options_for_select([
-                ["Не выбрано", ""],
-                ["Гостиная", "living_room"],
-                ["Спальня", "bedroom"],
-                ["Столовая", "dining_room"],
-                ["Кухня", "kitchen"],
-                ["Ванная", "bathroom"],
-                ["Офис", "office"],
-                ["Основная зона", "main_area"]
-              ], @image.room_type),
-              {},
-              { class: "input" } %>
+          <%= f.label :project_id, "ПРОЕКТ", class: "block text-xs font-bold text-white/60 uppercase tracking-wider mb-2" %>
+          <%= f.collection_select :project_id, 
+              @projects || current_user.projects.active, 
+              :id, 
+              :name,
+              { prompt: "Выберите проект", selected: @projects&.first&.id },
+              { class: "input-neon", id: "project_select" } %>
+        </div>
+        
+        <div>
+          <%= f.label :folder_id, "КОМНАТА / ПАПКА", class: "block text-xs font-bold text-white/60 uppercase tracking-wider mb-2" %>
+          <%= f.collection_select :folder_id, 
+              (@projects&.first&.folders&.ordered || []),
+              :id, 
+              :name,
+              { prompt: "Выберите комнату или папку (необязательно)", include_blank: true },
+              { class: "input-neon", id: "folder_select", required: false } %>
+          <p class="text-xs text-white/40 mt-1">Выберите категорию комнаты для организации фото</p>
+          <p class="text-xs text-[#00f7f6] mt-1" id="folder-hint" style="display: none;">
+            <span id="folder-count">0</span> комнат доступно в выбранном проекте
+          </p>
         </div>
 
         <div class="flex space-x-4">
-          <%= f.submit "Загрузить", class: "btn-primary flex-1" %>
-          <%= link_to "Отмена", dashboard_path, class: "btn-secondary flex-1 text-center" %>
+          <%= f.submit "ЗАГРУЗИТЬ", class: "btn-flash flex-1 text-sm py-3", id: "submitBtn" %>
+          <%= link_to "ОТМЕНА", dashboard_path, class: "btn-outlined flex-1 text-center text-sm py-3" %>
         </div>
       <% end %>
+      
+      <!-- Индикатор загрузки -->
+      <div id="uploadProgress" class="hidden mt-4 print-card p-4">
+        <div class="flex items-center space-x-3">
+          <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-[#00f7f6]"></div>
+          <p class="text-white font-bold">Загрузка изображения...</p>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const dropZoneContent = document.getElementById('dropZoneContent');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const removeFileBtn = document.getElementById('removeFile');
+
+    // Обработка выбора файла через input
+    fileInput.addEventListener('change', function(e) {
+      handleFileSelect(e.target.files);
+    });
+
+    // Клик на кнопку "ВЫБРАТЬ ФАЙЛ"
+    const selectFileBtn = document.getElementById('selectFileBtn');
+    if (selectFileBtn) {
+      selectFileBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        fileInput.click();
+      });
+    }
+
+    // Клик на drop zone также открывает file picker
+    dropZone.addEventListener('click', function(e) {
+      // Не открываем file picker если кликнули на кнопку удаления
+      if (e.target.id === 'removeFile' || e.target.closest('#removeFile')) {
+        return;
+      }
+      // Не открываем если кликнули на кнопку выбора файла (она уже обработана выше)
+      if (e.target.id === 'selectFileBtn' || e.target.closest('#selectFileBtn')) {
+        return;
+      }
+      fileInput.click();
+    });
+
+    // Drag and Drop
+    dropZone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove('dragover');
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        fileInput.files = files;
+        handleFileSelect(files);
+      }
+    });
+
+    // Обработка выбранного файла
+    function handleFileSelect(files) {
+      if (files && files.length > 0) {
+        const file = files[0];
+        if (file.type.startsWith('image/')) {
+          dropZone.classList.add('has-file');
+          dropZoneContent.classList.add('hidden');
+          fileInfo.classList.remove('hidden');
+          
+          fileName.textContent = file.name;
+          fileSize.textContent = formatFileSize(file.size);
+          
+          // Показываем превью изображения
+          const filePreview = document.getElementById('filePreview');
+          const fileIcon = document.getElementById('fileIcon');
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            filePreview.src = e.target.result;
+            filePreview.style.display = 'block';
+            fileIcon.style.display = 'none';
+          };
+          
+          reader.readAsDataURL(file);
+          
+          // Визуальная обратная связь - анимация успешной загрузки
+          setTimeout(() => {
+            dropZone.style.borderColor = '#ffe600';
+            dropZone.style.boxShadow = '0 0 20px rgba(255, 230, 0, 0.5)';
+          }, 100);
+        } else {
+          alert('Пожалуйста, выберите изображение');
+        }
+      }
+    }
+
+    // Объявляем переменные один раз в начале
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadProgress = document.getElementById('uploadProgress');
+
+    // Удаление файла
+    if (removeFileBtn) {
+      removeFileBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        fileInput.value = '';
+        dropZone.classList.remove('has-file');
+        dropZoneContent.classList.remove('hidden');
+        fileInfo.classList.add('hidden');
+        
+        // Сбрасываем превью
+        const filePreview = document.getElementById('filePreview');
+        const fileIcon = document.getElementById('fileIcon');
+        if (filePreview) {
+          filePreview.src = '';
+          filePreview.style.display = 'none';
+        }
+        if (fileIcon) {
+          fileIcon.style.display = 'block';
+        }
+        
+        // Сбрасываем стили
+        dropZone.style.borderColor = '';
+        dropZone.style.boxShadow = '';
+        
+        // Сбрасываем кнопку отправки
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'ЗАГРУЗИТЬ';
+        }
+        if (uploadProgress) {
+          uploadProgress.classList.add('hidden');
+        }
+      });
+    }
+
+    // Форматирование размера файла
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    // Динамическое обновление папок при выборе проекта
+    const projectSelect = document.getElementById('project_select');
+    const folderSelect = document.getElementById('folder_select');
+    
+    if (projectSelect && folderSelect) {
+      // Данные о папках для каждого проекта
+      const foldersData = {};
+      <% (@projects || current_user.projects.active.includes(:folders)).each do |project| %>
+      foldersData['<%= project.id %>'] = [
+        <% project.folders.ordered.each do |folder| %>
+        { id: <%= folder.id %>, name: <%= folder.name.to_json.html_safe %> },
+        <% end %>
+      ];
+      <% end %>
+      
+      console.log('Folders data loaded:', foldersData);
+
+      projectSelect.addEventListener('change', function() {
+        const projectId = this.value;
+        console.log('Project changed to:', projectId);
+        const folders = foldersData[projectId] || [];
+        console.log('Folders for project:', folders);
+        
+        // Очищаем список папок и сбрасываем значение
+        folderSelect.innerHTML = '<option value="">Выберите комнату или папку (необязательно)</option>';
+        folderSelect.value = ''; // Сбрасываем значение
+        
+        // Обновляем подсказку
+        const folderHint = document.getElementById('folder-hint');
+        const folderCount = document.getElementById('folder-count');
+        
+        // Добавляем папки выбранного проекта
+        if (folders.length > 0) {
+          folders.forEach(function(folder) {
+            const option = document.createElement('option');
+            option.value = folder.id.toString(); // Убеждаемся, что это строка
+            option.textContent = folder.name;
+            folderSelect.appendChild(option);
+          });
+          console.log('Added', folders.length, 'folders to select');
+          
+          // Показываем подсказку с количеством комнат
+          if (folderHint && folderCount) {
+            folderCount.textContent = folders.length;
+            folderHint.style.display = 'block';
+          }
+          
+          // Делаем select видимым и активным
+          folderSelect.style.display = 'block';
+          folderSelect.disabled = false;
+        } else {
+          console.warn('No folders found for project', projectId);
+          if (folderHint) {
+            folderHint.style.display = 'none';
+          }
+          folderSelect.disabled = false; // Разрешаем выбор даже если папок нет
+        }
+      });
+      
+      // Добавляем обработчик для проверки данных перед отправкой
+      const uploadFormValidation = document.getElementById('uploadForm');
+      
+      if (uploadFormValidation) {
+        uploadFormValidation.addEventListener('submit', function(e) {
+          const projectId = projectSelect.value;
+          const folderId = folderSelect.value;
+          console.log('Form submit - Project ID:', projectId, 'Folder ID:', folderId);
+          
+          // Проверяем, что файл выбран
+          if (!fileInput.files || fileInput.files.length === 0) {
+            e.preventDefault();
+            alert('Пожалуйста, выберите изображение для загрузки');
+            return false;
+          }
+          
+          // Проверяем, что если выбрана папка, то выбран и проект
+          if (folderId && !projectId) {
+            e.preventDefault();
+            alert('Пожалуйста, сначала выберите проект');
+            return false;
+          }
+          
+          // Проверяем, что папка принадлежит выбранному проекту
+          if (folderId && projectId) {
+            const folders = foldersData[projectId] || [];
+            const folderExists = folders.some(function(f) { 
+              return String(f.id) === String(folderId); 
+            });
+            if (!folderExists) {
+              // Если папка не принадлежит проекту, сбрасываем её
+              console.warn('Folder', folderId, 'does not belong to project', projectId);
+              console.warn('Available folders:', folders.map(f => f.id + ':' + f.name));
+              folderSelect.value = '';
+              // Не блокируем отправку - просто убираем folder_id
+              // Пользователь может загрузить фото только в проект без указания папки
+            }
+          }
+          
+          // Показываем индикатор загрузки
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'ЗАГРУЗКА...';
+          }
+          if (uploadProgress) {
+            uploadProgress.classList.remove('hidden');
+          }
+        });
+      }
+
+      // Инициализация при загрузке страницы
+      if (projectSelect.value) {
+        // Небольшая задержка для гарантии, что DOM готов
+        setTimeout(function() {
+          projectSelect.dispatchEvent(new Event('change'));
+          
+          // Показываем подсказку, если папки есть
+          const folders = foldersData[projectSelect.value] || [];
+          const folderHint = document.getElementById('folder-hint');
+          const folderCount = document.getElementById('folder-count');
+          if (folders.length > 0 && folderHint && folderCount) {
+            folderCount.textContent = folders.length;
+            folderHint.style.display = 'block';
+          }
+        }, 100);
+      }
+    }
+  }); // Закрываем document.addEventListener('DOMContentLoaded', function() {
+
+</script>

@@ -1,153 +1,687 @@
 <% content_for :title, "Dashboard - VirtualStagingAI" %>
 
-<div class="min-h-screen bg-gray-50">
-  <!-- Header -->
-  <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-    <div class="container mx-auto px-6 py-4">
-      <div class="flex justify-between items-center">
-        <div class="flex items-center space-x-3">
-          <div class="gradient-bg w-10 h-10 rounded-lg flex-shrink-0"></div>
-          <%= link_to "VirtualStagingAI", root_path, class: "text-xl font-bold text-gray-900 hover:text-purple-600 transition-colors" %>
+<% content_for :head do %>
+    <!-- Inter — шрифт дизайн-системы D3 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* ---------- ДИЗАЙН-СИСТЕМА VSAI D3 ---------- */
+        :root {
+            /* Основные фоны */
+            --ink: #03050a;
+            --panel-deep: #0b0e14;
+            --panel-raise: #12161e;
+            
+            /* Границы и разделители */
+            --border-sharp: #1e2632;
+            
+            /* Акцентные цвета */
+            --accent-electric: #00e0ff;
+            --accent-blue: #2f6cff;
+            
+            /* Текст */
+            --text-primary: #ffffff;
+            --text-secondary: #a0b3d9;
+            --text-muted: #62748c;
+            
+            /* Свечение */
+            --glow-electric: rgba(0, 224, 255, 0.35);
+            --glow-blue: rgba(47, 108, 255, 0.25);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--ink);
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+            position: relative;
+        }
+
+        /* Техно-сетка (поверх всего) */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: 
+                linear-gradient(var(--border-sharp) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-sharp) 1px, transparent 1px);
+            background-size: 48px 48px;
+            opacity: 0.2;
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        /* Сканирующая линия (микро-анимация) */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, 
+                rgba(0,224,255,0) 0px, 
+                rgba(0,224,255,0.02) 2px, 
+                transparent 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.3;
+        }
+
+        /* Неоновый текст */
+        .neon-electric {
+            color: var(--accent-electric);
+            text-shadow: 0 0 12px var(--accent-electric), 0 0 30px rgba(0,224,255,0.4);
+        }
+
+        /* карточки */
+        .print-card {
+            background: var(--panel-raise);
+            border: 1px solid var(--border-sharp);
+            box-shadow: 0 20px 35px -15px rgba(0,0,0,0.8);
+            transition: border 0.2s, box-shadow 0.3s, transform 0.15s;
+        }
+        .print-card:hover {
+            border: 1px solid var(--accent-electric);
+            box-shadow: 0 25px 40px -20px var(--glow-electric);
+            transform: translateY(-2px);
+        }
+
+        /* Кнопка основная (solid) */
+        .btn-flash {
+            background: var(--accent-blue);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 0;
+            box-shadow: 0 6px 0 #001a4f;
+            transition: 0.1s linear;
+            border: none;
+        }
+        .btn-flash:hover {
+            transform: translateY(2px);
+            box-shadow: 0 4px 0 #001a4f;
+        }
+
+        .btn-cyan {
+            background: var(--accent-blue);
+            color: var(--text-primary);
+            box-shadow: 0 6px 0 #001a4f;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: 0;
+        }
+        .btn-cyan:hover {
+            transform: translateY(2px);
+            box-shadow: 0 4px 0 #001a4f;
+        }
+        
+        /* Кнопка контурная */
+        .btn-outlined {
+            background: transparent;
+            color: var(--accent-electric);
+            border: 2px solid var(--accent-electric);
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: 0;
+            transition: all 0.2s;
+        }
+        .btn-outlined:hover {
+            background: var(--accent-electric);
+            color: var(--ink);
+            box-shadow: 0 0 25px var(--glow-electric);
+        }
+
+        /* Скроллбар */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--panel-deep);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-blue);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-electric);
+        }
+
+        /* Боковая навигация */
+        .dash-nav-item {
+            border-left: 3px solid transparent;
+            transition: 0.15s;
+        }
+        .dash-nav-item:hover, .dash-nav-item.active {
+            border-left: 3px solid var(--accent-electric);
+            background: rgba(0, 224, 255, 0.05);
+        }
+
+        /* Разделитель */
+        .divider-d3 {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-electric), transparent);
+            opacity: 0.3;
+        }
+
+        /* Прогресс-бар */
+        .progress-track {
+            background: #1a212c;
+            height: 6px;
+        }
+        .progress-fill {
+            background: var(--accent-electric);
+            height: 6px;
+            box-shadow: 0 0 12px var(--accent-electric);
+        }
+
+        /* Бейджи */
+        .badge-d3 {
+            background: rgba(0,224,255,0.08);
+            border: 1px solid rgba(0,224,255,0.3);
+            color: var(--accent-electric);
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: 0;
+        }
+
+        /* Статус-бейджи */
+        .badge-processing {
+            background: rgba(0, 224, 255, 0.08);
+            border: 1px solid rgba(0, 224, 255, 0.3);
+            color: var(--accent-electric);
+        }
+        .badge-done {
+            background: rgba(47, 108, 255, 0.08);
+            border: 1px solid rgba(47, 108, 255, 0.3);
+            color: var(--accent-blue);
+        }
+
+        /* Пагинация */
+        .pagination-d3 {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-sharp);
+            color: var(--text-secondary);
+            transition: 0.1s;
+            border-radius: 0;
+        }
+        .pagination-d3:hover, .pagination-d3.active {
+            border-color: var(--accent-electric);
+            color: var(--accent-electric);
+            background: rgba(0,224,255,0.05);
+        }
+    </style>
+<% end %>
+
+<div class="flex h-screen overflow-hidden">
+    
+    <!-- ========== ЛЕВАЯ НАВИГАЦИЯ ========== -->
+    <aside class="w-80 flex-shrink-0 print-card border-r flex flex-col" style="background: var(--panel-deep); border-right: 1px solid var(--border-sharp);">
+        <!-- логотип -->
+        <div class="flex items-center space-x-3 px-5 py-6 border-b" style="border-color: var(--border-sharp);">
+            <%= link_to root_path, class: "flex items-center space-x-3" do %>
+                <div class="w-8 h-8 bg-[var(--accent-electric)] rotate-12" style="box-shadow: 4px 4px 0 var(--accent-blue);"></div>
+                <span class="text-2xl font-semibold text-white tracking-tight neon-electric">VSAI</span>
+            <% end %>
         </div>
-        <div class="flex items-center space-x-6">
-          <%= link_to "My Photos", dashboard_path, class: "text-sm font-medium text-gray-700 hover:text-purple-600 transition-colors #{'text-purple-600 font-semibold border-b-2 border-purple-600 pb-1' if @folder == 'all'}" %>
-          <div class="relative" data-controller="dropdown">
-            <button class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors" data-action="click->dropdown#toggle" data-dropdown-target="button">
-              <span class="text-sm font-medium"><%= current_user.email %></span>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-            </button>
-            <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50" data-dropdown-target="menu">
-              <%= link_to "Settings", edit_user_registration_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors" %>
-              <%= link_to "Logout", destroy_user_session_path, method: :delete, data: { turbo_method: :delete }, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors" %>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <div class="flex">
-    <!-- Sidebar -->
-    <aside class="w-72 bg-white border-r border-gray-200 min-h-[calc(100vh-73px)]">
-      <div class="p-6">
-        <!-- Token Balance -->
-        <div class="mb-8 p-5 gradient-bg rounded-xl text-white shadow-lg">
-          <div class="text-xs font-medium opacity-90 mb-2 uppercase tracking-wide">Token Balance</div>
-          <div class="text-3xl font-bold mb-3"><%= @token_balance %></div>
-          <%= link_to "Top Up", "#", class: "inline-block text-sm font-medium underline opacity-90 hover:opacity-100 transition-opacity", data: { turbo: false } %>
-        </div>
-
-        <!-- Navigation -->
-        <nav class="space-y-1.5">
-          <%= link_to dashboard_path(folder: "all"), 
-              class: "flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 #{'bg-purple-50 text-purple-700 shadow-sm' if @folder == 'all'} #{'text-gray-700 hover:bg-gray-50' unless @folder == 'all'}" do %>
-            <span class="font-medium">All Photos</span>
-            <span class="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"><%= @total_photos %></span>
-          <% end %>
-
-          <%= link_to dashboard_path(folder: "unfiled"), 
-              class: "flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 #{'bg-purple-50 text-purple-700 shadow-sm' if @folder == 'unfiled'} #{'text-gray-700 hover:bg-gray-50' unless @folder == 'unfiled'}" do %>
-            <span class="font-medium">Unfiled</span>
-            <span class="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"><%= @unfiled_count %></span>
-          <% end %>
-
-          <%= link_to dashboard_path(folder: "trash"), 
-              class: "flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 #{'bg-purple-50 text-purple-700 shadow-sm' if @folder == 'trash'} #{'text-gray-700 hover:bg-gray-50' unless @folder == 'trash'}" do %>
-            <span class="font-medium">Trash</span>
-            <span class="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"><%= @trash_count %></span>
-          <% end %>
-
-          <div class="pt-6 mt-6 border-t border-gray-200">
-            <div class="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">FOLDERS</div>
-            <div class="space-y-1">
-              <% @folders.each do |folder| %>
-                <%= link_to dashboard_path(folder: folder[:slug]), 
-                    class: "flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 #{'bg-purple-50 text-purple-700 shadow-sm' if @folder == folder[:slug]} #{'text-gray-700 hover:bg-gray-50' unless @folder == folder[:slug]}",
-                    data: { turbo_frame: "photos-grid" } do %>
-                  <div class="flex items-center space-x-3">
-                    <span class="text-lg"><%= folder[:icon] %></span>
-                    <span class="font-medium"><%= folder[:name] %></span>
-                  </div>
-                  <span class="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"><%= folder[:count] %></span>
-                <% end %>
-              <% end %>
-            </div>
-          </div>
-        </nav>
-      </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="flex-1 p-8 bg-gray-50 min-h-[calc(100vh-73px)]">
-      <div class="max-w-7xl mx-auto">
-        <div class="flex justify-between items-center mb-8">
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-1">
-              <%= case @folder
-                  when "all" then "All Photos"
-                  when "unfiled" then "Unfiled"
-                  when "trash" then "Trash"
-                  else @folders.find { |f| f[:slug] == @folder }&.dig(:name) || "Photos"
-                  end %>
-            </h1>
-            <p class="text-sm text-gray-500">
-              <%= @images.count %> of <%= @total_photos %> photos
-            </p>
-          </div>
-          <%= link_to "Add Photo", new_project_path, class: "btn-primary px-6 py-3 text-sm font-semibold shadow-md hover:shadow-lg transition-all" %>
-        </div>
-
-        <!-- Photo Grid -->
-        <%= turbo_frame_tag "photos-grid" do %>
-          <% if @images.any? %>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              <% @images.each do |image| %>
-                <%= render "dashboard/photo_card", image: image %>
-              <% end %>
-            </div>
-
-            <!-- Pagination -->
-            <% if @total_pages > 1 %>
-              <div class="mt-12 flex justify-center items-center space-x-2">
-                <% if @page > 1 %>
-                  <%= link_to "← Previous", dashboard_path(folder: @folder, page: @page - 1), 
-                      class: "px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm",
-                      data: { turbo_frame: "photos-grid" } %>
+        
+            <!-- основные пункты -->
+            <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+                <%= link_to dashboard_path(folder: "all"), 
+                    class: "dash-nav-item flex items-center px-3 py-2.5 font-medium #{'active' if @folder == 'all'}",
+                    style: "color: var(--text-primary);" do %>
+                    <span class="text-lg mr-2 flex-shrink-0" style="color: var(--accent-electric);">⬜</span>
+                    <span class="flex-1">Все фото</span>
+                    <span class="text-xs badge-d3 flex-shrink-0" style="min-width: 28px; text-align: center; margin-left: auto;"><%= @total_photos %></span>
                 <% end %>
                 
-                <% start_page = [@page - 2, 1].max %>
-                <% end_page = [start_page + 4, @total_pages].min %>
-                <% (start_page..end_page).each do |page_num| %>
-                  <% if page_num == @page %>
-                    <span class="px-5 py-2.5 bg-purple-600 text-white rounded-lg text-sm font-semibold shadow-md"><%= page_num %></span>
-                  <% else %>
-                    <%= link_to page_num, dashboard_path(folder: @folder, page: page_num), 
-                        class: "px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm",
-                        data: { turbo_frame: "photos-grid" } %>
-                  <% end %>
+                <%= link_to dashboard_path(folder: "unfiled"), 
+                    class: "dash-nav-item flex items-center px-3 py-2.5 #{'active' if @folder == 'unfiled'}",
+                    style: "color: var(--text-secondary);" do %>
+                    <span class="text-lg mr-2 flex-shrink-0" style="color: var(--accent-electric);">🖼️</span>
+                    <span class="flex-1">Без папки</span>
+                    <span class="text-xs badge-d3 flex-shrink-0" style="min-width: 28px; text-align: center; margin-left: auto;"><%= @unfiled_count %></span>
                 <% end %>
-
-                <% if @page < @total_pages %>
-                  <%= link_to "Next →", dashboard_path(folder: @folder, page: @page + 1), 
-                      class: "px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm",
-                      data: { turbo_frame: "photos-grid" } %>
+                
+                <%= link_to dashboard_path(folder: "trash"), 
+                    class: "dash-nav-item flex items-center px-3 py-2.5 #{'active' if @folder == 'trash'}",
+                    style: "color: var(--text-secondary);" do %>
+                    <span class="text-lg mr-2 flex-shrink-0" style="color: var(--accent-electric);">🗑️</span>
+                    <span class="flex-1">Корзина</span>
+                    <span class="text-xs badge-d3 flex-shrink-0" style="min-width: 28px; text-align: center; margin-left: auto;"><%= @trash_count %></span>
                 <% end %>
-              </div>
-            <% end %>
-          <% else %>
-            <!-- Empty State -->
-            <div class="text-center py-20 bg-white rounded-xl border-2 border-dashed border-gray-300">
-              <div class="text-gray-400 text-7xl mb-6">📷</div>
-              <h2 class="text-2xl font-bold text-gray-900 mb-2">Nothing here yet</h2>
-              <p class="text-gray-600 mb-8 max-w-md mx-auto">Start by uploading your first photo to begin creating stunning virtual staging</p>
-              <%= link_to "Add Photo", new_project_path, class: "btn-primary px-6 py-3 text-sm font-semibold shadow-md hover:shadow-lg transition-all inline-block" %>
+            
+            <!-- Категории комнат -->
+            <div class="pt-6 mt-6 border-t" style="border-color: var(--border-sharp);">
+                <div class="px-4 py-2 text-xs font-semibold uppercase tracking-wider mb-2" style="color: var(--text-muted); letter-spacing: 1px;">КОМНАТЫ</div>
+                <div class="space-y-1">
+                    <% @room_categories.each do |category| %>
+                        <%= link_to dashboard_path(folder: category[:slug]), 
+                            class: "dash-nav-item flex items-center px-3 py-2.5 #{'active' if @folder == category[:slug]}",
+                            style: "color: var(--text-secondary);",
+                            data: { turbo_frame: "photos-grid" } do %>
+                            <span class="text-lg mr-2 flex-shrink-0"><%= category[:icon] %></span>
+                            <span class="font-medium flex-1 text-sm"><%= category[:name] %></span>
+                            <span class="text-xs badge-d3 flex-shrink-0" style="min-width: 28px; text-align: center; margin-left: auto;"><%= category[:count] %></span>
+                        <% end %>
+                    <% end %>
+                </div>
             </div>
-          <% end %>
-        <% end %>
-      </div>
-    </main>
-  </div>
+            
+            <!-- Проекты -->
+            <div class="pt-6 mt-6 border-t" style="border-color: var(--border-sharp);">
+                <div class="px-4 py-2 text-xs font-semibold uppercase tracking-wider mb-2 flex items-center justify-between" style="color: var(--text-muted); letter-spacing: 1px;">
+                    <span>ПРОЕКТЫ</span>
+                    <button onclick="openProjectModal()" class="text-[var(--accent-electric)] hover:text-[var(--accent-blue)] transition-colors cursor-pointer" title="Создать проект">
+                        <span class="text-lg">+</span>
+                    </button>
+                </div>
+                <% if @projects.any? %>
+                    <div class="space-y-1">
+                        <% @projects.each do |project| %>
+                            <% project_images_count = current_user.images.input.not_deleted.where(project_id: project.id).count %>
+                                <div class="group relative">
+                                    <div class="dash-nav-item flex items-center px-3 py-2.5 cursor-pointer" 
+                                         style="color: var(--text-secondary);"
+                                         onclick="toggleProjectFolders(this.closest('.group'))">
+                                        <span class="text-lg mr-2 flex-shrink-0" style="color: var(--accent-blue);">📁</span>
+                                        <span class="font-medium flex-1 truncate text-sm"><%= project.name %></span>
+                                        <span class="text-xs badge-d3 flex-shrink-0" style="min-width: 28px; text-align: center; margin-left: auto;"><%= project_images_count %></span>
+                                        <!-- Кнопка удаления проекта -->
+                                        <%= button_to project_path(project),
+                                            method: :delete,
+                                            class: "opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-[var(--panel-deep)] rounded flex-shrink-0 ml-2",
+                                            style: "color: var(--text-muted);",
+                                            title: "Удалить проект",
+                                            data: { project_name: project.name },
+                                            onclick: "event.stopPropagation(); return confirmDeleteProject(event, this.dataset.projectName);" do %>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--accent-electric);">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        <% end %>
+                                    </div>
+                                <div class="hidden pl-4 space-y-1" id="project-<%= project.id %>-folders">
+                                    <% project.folders.ordered.each do |folder| %>
+                                        <% folder_count = current_user.images.input.not_deleted.where(folder_id: folder.id).count %>
+                                        <%= link_to dashboard_path(folder: folder.id.to_s), 
+                                            class: "dash-nav-item flex items-center px-3 py-2 #{'active' if @folder == folder.id.to_s}",
+                                            style: "color: var(--text-muted); font-size: 0.875rem;",
+                                            data: { turbo_frame: "photos-grid" } do %>
+                                            <span class="text-base mr-2 flex-shrink-0"><%= folder.icon || "📄" %></span>
+                                            <span class="font-medium flex-1 truncate text-sm"><%= folder.name %></span>
+                                            <span class="text-xs badge-d3 flex-shrink-0" style="min-width: 28px; text-align: center; margin-left: auto;"><%= folder_count %></span>
+                                        <% end %>
+                                    <% end %>
+                                </div>
+                            </div>
+                        <% end %>
+                    </div>
+                <% else %>
+                    <div class="px-4 py-3 text-sm" style="color: var(--text-muted);">
+                        <p>Нет проектов. Создайте первый проект, нажав на кнопку "+" выше.</p>
+                    </div>
+                <% end %>
+            </div>
+            
+            <!-- Все папки (если нужно показать отдельно) -->
+            <% if @folders.any? && false %>
+                <div class="pt-6 mt-6 border-t" style="border-color: var(--border-sharp);">
+                    <div class="px-4 py-2 text-xs font-semibold uppercase tracking-wider mb-2" style="color: var(--text-muted); letter-spacing: 1px;">ПАПКИ</div>
+                    <div class="space-y-1">
+                        <% @folders.each do |folder| %>
+                            <%= link_to dashboard_path(folder: folder[:slug]), 
+                                class: "dash-nav-item flex items-center space-x-4 px-4 py-3 #{'active' if @folder == folder[:slug]}",
+                                style: "color: var(--text-secondary);",
+                                data: { turbo_frame: "photos-grid" } do %>
+                                <span class="text-xl"><%= folder[:icon] %></span>
+                                <span class="font-medium"><%= folder[:name] %></span>
+                                <span class="ml-auto text-xs badge-d3"><%= folder[:count] %></span>
+                            <% end %>
+                        <% end %>
+                    </div>
+                </div>
+            <% end %>
+        </nav>
+        
+        <!-- баланс / апгрейд -->
+        <div class="p-5 border-t" style="border-color: var(--border-sharp);">
+            <div class="print-card p-4" style="background: var(--panel-deep);">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs uppercase tracking-wider" style="color: var(--text-muted); letter-spacing: 1px;">Баланс</span>
+                    <span class="neon-electric font-semibold"><%= @token_balance %></span>
+                </div>
+                <div class="w-full progress-track mb-4">
+                    <% balance_percent = [(@token_balance.to_f / 1000 * 100).round, 100].min %>
+                    <div class="progress-fill" style="width: <%= balance_percent %>%;"></div>
+                </div>
+                <%= link_to "#", class: "btn-flash text-xs py-2 px-3 w-full text-center block" do %>
+                    Пополнить
+                <% end %>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ========== ПРАВАЯ ЧАСТЬ ========== -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        
+        <!-- ========== ВЕРХНЯЯ ПАНЕЛЬ ========== -->
+        <header class="print-card flex-shrink-0 flex justify-between items-center px-8 py-4 border-b" style="background: var(--panel-raise); border-bottom: 1px solid var(--border-sharp);">
+            <h2 class="text-2xl font-semibold uppercase tracking-tight">
+                <span class="neon-electric">
+                    <%= case @folder
+                        when "all" then "ВСЕ ФОТО"
+                        when "unfiled" then "БЕЗ ПАПКИ"
+                        when "trash" then "КОРЗИНА"
+                        when "living_room", "bedroom", "dining_room", "kitchen", "bathroom", "office", "main_area"
+                          @room_categories.find { |c| c[:slug] == @folder }&.dig(:name)&.upcase || "КОМНАТА"
+                        else
+                          # Ищем папку по ID
+                          folder_id = @folder.to_i
+                          if folder_id > 0
+                            folder = Folder.joins(:project).where(id: folder_id, projects: { user_id: current_user.id }).first
+                            folder ? "#{folder.project.name} / #{folder.name}".upcase : "ПАПКА"
+                          else
+                            "ПРОЕКТЫ"
+                          end
+                        end %>
+                </span>
+                <span class="mx-2" style="color: var(--text-muted);">/</span>
+                <span style="color: var(--text-primary);">
+                    <%= @images.count %> из <%= case @folder
+                        when "all" then @total_photos
+                        when "unfiled" then @unfiled_count
+                        when "trash" then @trash_count
+                        when "living_room", "bedroom", "dining_room", "kitchen", "bathroom", "office", "main_area"
+                          @room_categories.find { |c| c[:slug] == @folder }&.dig(:count) || 0
+                        else
+                          folder_id = @folder.to_i
+                          if folder_id > 0
+                            folder = Folder.joins(:project).where(id: folder_id, projects: { user_id: current_user.id }).first
+                            folder ? current_user.images.input.not_deleted.where(folder_id: folder.id).count : 0
+                          else
+                            0
+                          end
+                        end %>
+                </span>
+            </h2>
+            <div class="flex items-center space-x-6">
+                <!-- Кнопка Add Photo (outlined style) -->
+                <%= link_to new_project_path, class: "btn-outlined text-xs py-2.5 px-5 whitespace-nowrap" do %>
+                    + ДОБАВИТЬ ФОТО
+                <% end %>
+                
+                <!-- статистика быстрая -->
+                <div class="flex items-center space-x-3 text-sm">
+                    <span style="color: var(--text-muted);">КРЕДИТОВ:</span>
+                    <span class="font-semibold" style="color: var(--accent-electric);"><%= @token_balance %></span>
+                    <span style="color: var(--border-sharp);">|</span>
+                    <span style="color: var(--text-muted);">ОБРАБОТАНО:</span>
+                    <span class="font-semibold" style="color: var(--accent-blue);"><%= @total_photos %></span>
+                </div>
+                <!-- профиль -->
+                <div class="relative" data-controller="dropdown">
+                    <button class="flex items-center space-x-3 print-card px-4 py-2 transition-all" data-action="click->dropdown#toggle" data-dropdown-target="button" style="background: var(--panel-deep); border: 1px solid var(--border-sharp);">
+                        <span class="text-sm font-semibold uppercase" style="color: var(--text-secondary);"><%= current_user.email.split('@').first %></span>
+                        <div class="w-9 h-9 bg-[var(--accent-electric)] rotate-6" style="box-shadow: 3px 3px 0 var(--accent-blue);"></div>
+                        <svg class="w-4 h-4" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="hidden absolute right-0 mt-2 w-48 print-card py-1 z-50 border-2" data-dropdown-target="menu" style="background: var(--panel-raise); border-color: var(--accent-electric); opacity: 0.5;">
+                        <%= link_to edit_user_registration_path, class: "block px-4 py-3 text-sm hover:bg-[var(--panel-deep)] transition-colors font-medium uppercase tracking-wide", style: "color: var(--text-secondary);" do %>
+                            ⚙️ Настройки
+                        <% end %>
+                        <%= link_to destroy_user_session_path, method: :delete, data: { turbo_method: :delete }, class: "block px-4 py-3 text-sm hover:bg-[var(--panel-deep)] transition-colors font-semibold uppercase tracking-wide border-t", style: "color: var(--accent-electric); border-color: var(--border-sharp);" do %>
+                            🚪 Выход
+                        <% end %>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ========== ОСНОВНОЙ КОНТЕНТ ========== -->
+        <main class="flex-1 overflow-y-auto px-8 py-8" style="background: var(--ink);">
+            
+            <%= turbo_frame_tag "photos-grid" do %>
+                <% if @images.any? %>
+                    <!-- сетка фотографий -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+                        <% @images.each do |image| %>
+                            <%= render "dashboard/photo_card", image: image %>
+                        <% end %>
+                    </div>
+
+                    <!-- Пагинация -->
+                    <% if @total_pages > 1 %>
+                        <div class="flex justify-center items-center space-x-2 mt-12">
+                            <% if @page > 1 %>
+                                <%= link_to "←", dashboard_path(folder: @folder, page: @page - 1), 
+                                    class: "pagination-d3 text-sm font-semibold",
+                                    data: { turbo_frame: "photos-grid" } %>
+                            <% end %>
+                            
+                            <% start_page = [@page - 2, 1].max %>
+                            <% end_page = [start_page + 4, @total_pages].min %>
+                            <% (start_page..end_page).each do |page_num| %>
+                                <% if page_num == @page %>
+                                    <span class="pagination-d3 active text-sm font-semibold"><%= page_num %></span>
+                                <% else %>
+                                    <%= link_to page_num, dashboard_path(folder: @folder, page: page_num), 
+                                        class: "pagination-d3 text-sm font-semibold",
+                                        data: { turbo_frame: "photos-grid" } %>
+                                <% end %>
+                            <% end %>
+
+                            <% if @page < @total_pages %>
+                                <%= link_to "→", dashboard_path(folder: @folder, page: @page + 1), 
+                                    class: "pagination-d3 text-sm font-semibold",
+                                    data: { turbo_frame: "photos-grid" } %>
+                            <% end %>
+                        </div>
+                    <% end %>
+                <% else %>
+                    <!-- Empty State -->
+                    <div class="print-card p-20 text-center border-2 border-dashed" style="border-color: var(--accent-electric); opacity: 0.3;">
+                        <div class="text-7xl mb-6 neon-electric">📷</div>
+                        <h2 class="text-2xl font-semibold mb-2 neon-electric">Nothing here yet</h2>
+                        <p class="mb-8 max-w-md mx-auto" style="color: var(--text-secondary);">Начните с загрузки первого фото для создания виртуального стайлинга</p>
+                        <%= link_to "ДОБАВИТЬ ФОТО", new_project_path, class: "btn-flash inline-block px-8 py-4 text-sm" %>
+                    </div>
+                <% end %>
+            <% end %>
+        </main>
+    </div>
 </div>
 
+    <!-- скрипты для интерактивности -->
+    <script>
+        // Функция для открытия модального окна создания проекта
+        function openProjectModal() {
+            fetch('<%= new_project_projects_path %>', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'text/html',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Удаляем существующее модальное окно, если есть
+                const existingModal = document.getElementById('new-project-modal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+                
+                // Добавляем новое модальное окно в body
+                const modalContainer = document.createElement('div');
+                modalContainer.innerHTML = html;
+                document.body.appendChild(modalContainer);
+                
+                // Анимация появления
+                const modal = document.getElementById('new-project-modal');
+                if (modal) {
+                    modal.style.opacity = '0';
+                    modal.style.transition = 'opacity 0.2s ease-in';
+                    setTimeout(() => {
+                        modal.style.opacity = '1';
+                    }, 10);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке модального окна:', error);
+            });
+        }
+
+        // Функция для открытия модального окна изображения
+        function openImageModal(imageId) {
+            const imagePath = '/images/' + imageId + '/modal';
+            fetch(imagePath, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'text/html',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка загрузки изображения');
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Удаляем существующее модальное окно для этого изображения, если есть
+                const existingModal = document.getElementById('image-modal-' + imageId);
+                if (existingModal) {
+                    existingModal.remove();
+                }
+                
+                // Добавляем новое модальное окно в body
+                const modalContainer = document.createElement('div');
+                modalContainer.innerHTML = html;
+                document.body.appendChild(modalContainer);
+                
+                // Анимация появления
+                const modal = document.getElementById('image-modal-' + imageId);
+                if (modal) {
+                    modal.style.opacity = '0';
+                    modal.style.transition = 'opacity 0.2s ease-in';
+                    setTimeout(() => {
+                        modal.style.opacity = '1';
+                    }, 10);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке модального окна изображения:', error);
+                alert('Не удалось загрузить информацию об изображении');
+            });
+        }
+
+        // Функция для закрытия модального окна изображения
+        function closeImageModal(imageId) {
+            const modal = document.getElementById('image-modal-' + imageId);
+            if (modal) {
+                modal.style.opacity = '0';
+                modal.style.transition = 'opacity 0.2s ease-out';
+                setTimeout(() => {
+                    modal.remove();
+                }, 200);
+            }
+        }
+
+        // Функция для закрытия модального окна
+        function closeProjectModal() {
+            const modal = document.getElementById('new-project-modal');
+            if (modal) {
+                modal.style.opacity = '0';
+                setTimeout(() => {
+                    modal.remove();
+                }, 200);
+            }
+        }
+
+        // Закрытие по Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeProjectModal();
+            }
+        });
+
+        // Функция для подтверждения удаления проекта
+        function confirmDeleteProject(event, projectName) {
+            const confirmed = confirm(`Вы уверены, что хотите удалить проект "${projectName}"?\n\nВсе папки и изображения в этом проекте также будут удалены.\n\nЭто действие нельзя отменить.`);
+            if (!confirmed) {
+                event.preventDefault();
+                event.stopPropagation();
+                return false;
+            }
+            return true;
+        }
+
+        // Функция для раскрытия/сворачивания папок проекта
+        function toggleProjectFolders(groupElement) {
+            // Если передан элемент, который не является group, находим ближайший group
+            const group = groupElement.classList && groupElement.classList.contains('group') 
+                ? groupElement 
+                : groupElement.closest('.group');
+            if (!group) return;
+            
+            // Находим div с папками
+            const foldersDiv = group.querySelector('[id^="project-"][id$="-folders"]');
+            if (!foldersDiv) return;
+            
+            // Переключаем видимость папок
+            if (foldersDiv.classList.contains('hidden')) {
+                foldersDiv.classList.remove('hidden');
+            } else {
+                foldersDiv.classList.add('hidden');
+            }
+        }
+        
+        // Активная навигация переключается автоматически через Rails
+        document.querySelectorAll('.dash-nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                // Убираем active со всех элементов
+                document.querySelectorAll('.dash-nav-item').forEach(nav => nav.classList.remove('active'));
+                // Добавляем active к текущему элементу
+                if (!this.classList.contains('active')) {
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Dropdown меню для профиля
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownButtons = document.querySelectorAll('[data-dropdown-target="button"]');
+            const dropdownMenus = document.querySelectorAll('[data-dropdown-target="menu"]');
+            
+            dropdownButtons.forEach((button, index) => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const menu = dropdownMenus[index];
+                    const isHidden = menu.classList.contains('hidden');
+                    
+                    // Закрываем все меню
+                    dropdownMenus.forEach(m => m.classList.add('hidden'));
+                    
+                    // Открываем текущее, если было скрыто
+                    if (isHidden) {
+                        menu.classList.remove('hidden');
+                    }
+                });
+            });
+            
+            // Закрываем меню при клике вне его
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('[data-controller="dropdown"]')) {
+                    dropdownMenus.forEach(menu => menu.classList.add('hidden'));
+                }
+            });
+        });
+    </script>

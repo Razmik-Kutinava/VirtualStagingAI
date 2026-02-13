@@ -1,0 +1,179 @@
+<!-- Модальное окно для создания проекта -->
+<div id="new-project-modal" class="fixed inset-0 z-50 flex items-center justify-center" style="background: rgba(3, 5, 10, 0.85); backdrop-filter: blur(4px);" onclick="if(event.target === this) closeProjectModal()">
+  <div class="print-card w-full max-w-md mx-4" style="background: var(--panel-raise); border: 2px solid var(--accent-electric);" onclick="event.stopPropagation()">
+    <!-- Заголовок -->
+    <div class="flex items-center justify-between px-6 py-4 border-b" style="border-color: var(--border-sharp);">
+      <h2 class="text-xl font-semibold uppercase tracking-tight neon-electric">Создать проект</h2>
+      <button onclick="closeProjectModal()" class="text-2xl font-bold hover:text-[var(--accent-blue)] transition-colors" style="color: var(--text-muted);" aria-label="Закрыть">
+        ×
+      </button>
+    </div>
+
+    <!-- Форма -->
+    <%= form_with model: @project || current_user.projects.build, 
+                  url: create_project_projects_path, 
+                  method: :post,
+                  local: true,
+                  class: "p-6 space-y-5",
+                  data: { turbo: false },
+                  onsubmit: "handleProjectSubmit(event)" do |f| %>
+      
+      <% if @project&.errors&.any? %>
+        <div class="p-3 mb-4 border-2" style="background: rgba(255, 59, 127, 0.1); border-color: #ff3b7f; color: #ff3b7f;">
+          <ul class="text-sm space-y-1">
+            <% @project.errors.full_messages.each do |message| %>
+              <li>• <%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <!-- Название проекта -->
+      <div>
+        <%= f.label :name, "НАЗВАНИЕ ПРОЕКТА", class: "block text-xs font-bold text-white/60 uppercase tracking-wider mb-2" %>
+        <%= f.text_field :name, 
+            class: "w-full px-4 py-3 bg-[var(--panel-deep)] border-2 focus:border-[var(--accent-electric)] focus:outline-none transition-colors",
+            style: "border-color: var(--border-sharp); color: var(--text-primary);",
+            placeholder: "Например: Квартира на Ленина, 10",
+            required: true,
+            autofocus: true %>
+      </div>
+
+      <!-- Описание -->
+      <div>
+        <%= f.label :description, "ОПИСАНИЕ", class: "block text-xs font-bold text-white/60 uppercase tracking-wider mb-2" %>
+        <%= f.text_area :description, 
+            rows: 3,
+            class: "w-full px-4 py-3 bg-[var(--panel-deep)] border-2 focus:border-[var(--accent-electric)] focus:outline-none transition-colors resize-none",
+            style: "border-color: var(--border-sharp); color: var(--text-primary);",
+            placeholder: "Дополнительная информация о проекте (необязательно)" %>
+      </div>
+
+      <!-- Адрес объекта -->
+      <div>
+        <%= f.label :property_address, "АДРЕС ОБЪЕКТА", class: "block text-xs font-bold text-white/60 uppercase tracking-wider mb-2" %>
+        <%= f.text_field :property_address, 
+            class: "w-full px-4 py-3 bg-[var(--panel-deep)] border-2 focus:border-[var(--accent-electric)] focus:outline-none transition-colors",
+            style: "border-color: var(--border-sharp); color: var(--text-primary);",
+            placeholder: "Например: г. Москва, ул. Ленина, д. 10" %>
+      </div>
+
+      <!-- Тип объекта -->
+      <div>
+        <%= f.label :property_type, "ТИП ОБЪЕКТА", class: "block text-xs font-bold text-white/60 uppercase tracking-wider mb-2" %>
+        <%= f.select :property_type, 
+            options_for_select([
+              ['', ''],
+              ['Квартира', 'apartment'],
+              ['Дом', 'house'],
+              ['Коммерческое', 'commercial']
+            ], @project&.property_type),
+            {},
+            { class: "w-full px-4 py-3 bg-[var(--panel-deep)] border-2 focus:border-[var(--accent-electric)] focus:outline-none transition-colors",
+              style: "border-color: var(--border-sharp); color: var(--text-primary);" } %>
+      </div>
+
+      <!-- Кнопки -->
+      <div class="flex space-x-4 pt-4">
+        <%= f.submit "СОЗДАТЬ", class: "btn-flash flex-1 text-sm py-3" %>
+        <button type="button" onclick="closeProjectModal()" class="btn-outlined flex-1 text-center text-sm py-3">
+          ОТМЕНА
+        </button>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  function closeProjectModal() {
+    const modal = document.getElementById('new-project-modal');
+    if (modal) {
+      modal.style.opacity = '0';
+      setTimeout(() => {
+        modal.remove();
+      }, 200);
+    }
+  }
+
+  // Обработка отправки формы
+  function handleProjectSubmit(event) {
+    const form = event.target;
+    const formData = new FormData(form);
+    const submitButton = form.querySelector('input[type="submit"]');
+    
+    // Блокируем кнопку отправки
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.value = 'СОЗДАНИЕ...';
+    }
+    
+    fetch(form.action, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                        document.querySelector('input[name="authenticity_token"]')?.value
+      },
+      redirect: 'follow'
+    })
+    .then(response => {
+      if (response.redirected || response.ok) {
+        // Успешное создание - редирект на дашборд
+        if (response.redirected) {
+          window.location.href = response.url;
+        } else {
+          return response.json().then(data => {
+            if (data.success && data.redirect_url) {
+              window.location.href = data.redirect_url;
+            } else {
+              window.location.reload();
+            }
+          });
+        }
+      } else {
+        // Ошибки валидации - обновляем модальное окно
+        return response.text().then(html => {
+          const modal = document.getElementById('new-project-modal');
+          if (modal) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newModal = doc.getElementById('new-project-modal');
+            if (newModal) {
+              modal.outerHTML = newModal.outerHTML;
+              // Повторно инициализируем обработчики
+              const updatedModal = document.getElementById('new-project-modal');
+              if (updatedModal) {
+                updatedModal.style.opacity = '0';
+                setTimeout(() => {
+                  updatedModal.style.opacity = '1';
+                }, 10);
+              }
+            }
+          }
+        });
+      }
+    })
+    .catch(error => {
+      console.error('Ошибка при создании проекта:', error);
+      alert('Произошла ошибка при создании проекта. Попробуйте еще раз.');
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.value = 'СОЗДАТЬ';
+      }
+    });
+    
+    event.preventDefault();
+    return false;
+  }
+
+  // Закрытие по Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const modal = document.getElementById('new-project-modal');
+      if (modal && !modal.classList.contains('hidden')) {
+        closeProjectModal();
+      }
+    }
+  });
+</script>

@@ -1,5 +1,7 @@
 class Image < ApplicationRecord
   belongs_to :user
+  belongs_to :project, optional: true
+  belongs_to :folder, optional: true
   has_one_attached :file
 
   has_many :input_generations, class_name: "Generation", foreign_key: "input_image_id", dependent: :destroy

@@ -1,784 +1,672 @@
-<% content_for :title, "Virtual Staging AI - Transform Empty Rooms Instantly" %>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+    <title>VirtualStagingAI — нейростайлинг для риелторов</title>
+    <!-- Space Grotesx — гротеск с характером -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* ---------- ПОЛНАЯ ПЕРЕСБОРКА. ТОЛЬКО НЕОН. ТОЛЬКО ХАРД ---------- */
+        :root {
+            --pink: #ff3b7f;
+            --cyan: #00f7f6;
+            --yellow: #ffe600;
+            --magenta: #c724b1;
+            --chrome: #0b0d10;
+            --film: #f2e9d2;
+        }
 
-<% content_for :head do %>
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    * { font-family: 'Inter', sans-serif; }
-    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .hover-scale { transition: transform 0.3s ease; }
-    .hover-scale:hover { transform: scale(1.05); }
-    .before-after-container { position: relative; overflow: hidden; }
-    .before-after-slider { position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background: white; cursor: ew-resize; }
-    .room-style-card { transition: all 0.3s ease; }
-    .room-style-card:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-    .sticky-nav { position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
-    /* Font Awesome icon replacements */
-    .fa-cloud-upload-alt::before, .fa-cloud-upload-alt { content: "📤"; font-style: normal; }
-    .fa-check-circle::before, .fa-check-circle { content: "✓"; font-style: normal; }
-    .fa-dollar-sign::before, .fa-dollar-sign { content: "$"; font-style: normal; }
-    .fa-bolt::before, .fa-bolt { content: "⚡"; font-style: normal; }
-    .fa-couch::before, .fa-couch { content: "🛋️"; font-style: normal; }
-    .fa-images::before, .fa-images { content: "🖼️"; font-style: normal; }
-    .fa-users::before, .fa-users { content: "👥"; font-style: normal; }
-    .fa-clock::before, .fa-clock { content: "⏱️"; font-style: normal; }
-    .fa-check::before, .fa-check { content: "✓"; font-style: normal; }
-    .fa-play-circle::before, .fa-play-circle { content: "▶"; font-style: normal; }
-    .fa-hand-sparkles::before, .fa-hand-sparkles { content: "✨"; font-style: normal; }
-    .fa-infinity::before, .fa-infinity { content: "∞"; font-style: normal; }
-    .fa-robot::before, .fa-robot { content: "🤖"; font-style: normal; }
-    .fa-file-contract::before, .fa-file-contract { content: "📄"; font-style: normal; }
-    .fa-mobile-alt::before, .fa-mobile-alt { content: "📱"; font-style: normal; }
-    .fa-shield-alt::before, .fa-shield-alt { content: "🛡️"; font-style: normal; }
-    .fa-facebook::before, .fa-facebook { content: "f"; font-style: normal; }
-    .fa-instagram::before, .fa-instagram { content: "📷"; font-style: normal; }
-    .fa-youtube::before, .fa-youtube { content: "▶"; font-style: normal; }
-    .fa-linkedin::before, .fa-linkedin { content: "in"; font-style: normal; }
-    .fa-heart::before, .fa-heart { content: "❤"; font-style: normal; }
-    .fa-paper-plane::before, .fa-paper-plane { content: "✈"; font-style: normal; }
-    .fa-brain::before, .fa-brain { content: "🧠"; font-style: normal; }
-    .fa-download::before, .fa-download { content: "⬇"; font-style: normal; }
-</style>
-<% end %>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #0b0d10;
+            color: #ffffff;
+            letter-spacing: -0.01em;
+            position: relative;
+        }
 
-<div class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="sticky-nav bg-white/90 shadow-sm">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <div class="gradient-bg w-8 h-8 rounded-lg"></div>
-                    <span class="text-xl font-bold text-gray-800">VirtualStagingAI</span>
-                </div>
-                <div class="hidden md:flex space-x-8">
-                    <a href="#gallery" class="text-gray-600 hover:text-purple-600 font-medium">Gallery</a>
-                    <a href="#styles" class="text-gray-600 hover:text-purple-600 font-medium">Room Styles</a>
-                    <a href="#how" class="text-gray-600 hover:text-purple-600 font-medium">How It Works</a>
-                    <a href="#pricing" class="text-gray-600 hover:text-purple-600 font-medium">Pricing</a>
-                    <a href="#" class="text-gray-600 hover:text-purple-600 font-medium">API</a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <% if user_signed_in? %>
-                        <%= link_to "Профиль", edit_user_registration_path, class: "text-gray-600 hover:text-purple-600 font-medium" %>
-                        <%= link_to "Выйти", destroy_user_session_path, data: { turbo_method: :delete }, class: "gradient-bg text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition" %>
-                    <% else %>
-                        <%= link_to "Войти", new_user_session_path, class: "text-gray-600 hover:text-purple-600 font-medium" %>
-                        <%= link_to "Регистрация", new_user_registration_path, class: "gradient-bg text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90 transition" %>
-                    <% end %>
-                </div>
+        /* текстурный шум — как старая фотоплёнка */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="1"/><feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.15 0"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.045"/></svg>');
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: overlay;
+        }
+
+        /* неоновое свечение */
+        .neon-pink {
+            color: var(--pink);
+            text-shadow: 0 0 8px var(--pink), 0 0 20px rgba(255, 59, 127, 0.5);
+        }
+        .neon-cyan {
+            color: var(--cyan);
+            text-shadow: 0 0 8px var(--cyan), 0 0 20px rgba(0, 247, 246, 0.4);
+        }
+        .neon-yellow {
+            color: var(--yellow);
+            text-shadow: 0 0 8px var(--yellow), 0 0 20px rgba(255, 230, 0, 0.4);
+        }
+
+        /* карточки-боксы с глянцем */
+        .print-card {
+            background: #12161c;
+            border: 1px solid #2a2e38;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.8);
+            transition: border 0.2s, box-shadow 0.3s, transform 0.25s cubic-bezier(0.2, 0.95, 0.4, 1);
+        }
+        .print-card:hover {
+            border: 1px solid var(--pink);
+            box-shadow: 0 25px 40px -12px #ff3b7f80, 0 0 0 1px #ff3b7f inset;
+            transform: translateY(-6px) scale(1.01);
+        }
+
+        /* кнопка-вспышка */
+        .btn-flash {
+            background: var(--yellow);
+            color: #0b0d10;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 2px;
+            box-shadow: 6px 6px 0 var(--pink);
+            transition: 0.1s linear;
+            border: none;
+        }
+        .btn-flash:hover {
+            background: #fff150;
+            box-shadow: 3px 3px 0 var(--magenta);
+            transform: translate(3px, 3px);
+        }
+
+        .btn-cyan {
+            background: var(--cyan);
+            color: #0b0d10;
+            box-shadow: 6px 6px 0 var(--pink);
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-radius: 2px;
+        }
+
+        /* цифры статистики — жёлтые, жирные */
+        .stat-num {
+            color: var(--yellow);
+            font-size: 5rem;
+            font-weight: 800;
+            line-height: 1;
+            text-shadow: 5px 5px 0 var(--pink), 8px 8px 0 rgba(0,247,246,0.3);
+        }
+
+        /* плёночный слайдер */
+        .film-split {
+            border: 3px solid var(--yellow);
+            outline: 1px solid black;
+            outline-offset: -4px;
+        }
+
+        /* все заголовки — ТОЛЬКО ЗАГЛАВНЫЕ, плотные */
+        h1, h2, h3, .h1, .h2, .h3 {
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+
+        /* сканирующая линия VHS */
+        .vhs-overlay {
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(255,255,255,0.02) 1px, transparent 2px);
+            pointer-events: none;
+        }
+
+        /* навигационные ссылки — активные и кликабельные */
+        .nav-link {
+            position: relative;
+            display: inline-block;
+            text-decoration: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            pointer-events: auto !important;
+            cursor: pointer !important;
+            z-index: 10;
+        }
+        
+        /* Стили для кнопок входа и регистрации */
+        nav a[href*="/users/"] {
+            pointer-events: auto !important;
+            cursor: pointer !important;
+            z-index: 1000 !important;
+            position: relative !important;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--cyan);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 8px var(--cyan);
+        }
+        
+        .nav-link:hover {
+            color: var(--cyan) !important;
+            text-shadow: 0 0 8px var(--cyan);
+            transform: translateY(-1px);
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .nav-link:active {
+            transform: translateY(0);
+            color: var(--yellow) !important;
+            text-shadow: 0 0 12px var(--yellow);
+        }
+        
+        .nav-link:active::after {
+            background: var(--yellow);
+            box-shadow: 0 0 12px var(--yellow);
+        }
+    </style>
+</head>
+<body class="vhs-overlay">
+
+    <!-- ========== НАВИГАЦИЯ ========== -->
+    <nav class="sticky top-0 z-[100] py-3 px-4 md:px-6" style="background: rgba(11,13,16,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,59,127,0.5);">
+        <div class="container mx-auto flex justify-between items-center">
+            <!-- логотип: абстрактная вспышка -->
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 bg-[#ffe600] rotate-12 shadow-[4px_4px_0_#ff3b7f]"></div>
+                <span class="text-2xl font-black text-white tracking-tight" style="text-shadow: 2px 2px 0 #ff3b7f;">VSAI</span>
+            </div>
+            <!-- центр навигации -->
+            <div class="hidden md:flex items-center space-x-8 font-bold uppercase text-sm tracking-wide">
+                <a href="#gallery" class="nav-link text-white/80 hover:text-[#00f7f6] transition-all duration-200 py-2 px-1 cursor-pointer relative">Галерея</a>
+                <a href="#styles" class="nav-link text-white/80 hover:text-[#00f7f6] transition-all duration-200 py-2 px-1 cursor-pointer relative">Стили</a>
+                <a href="#how" class="nav-link text-white/80 hover:text-[#00f7f6] transition-all duration-200 py-2 px-1 cursor-pointer relative">Как работает</a>
+                <a href="#pricing" id="nav-pricing" class="nav-link text-white/80 hover:text-[#00f7f6] transition-all duration-200 py-2 px-1 cursor-pointer relative">Цены</a>
+                <a href="#" class="nav-link text-white/80 hover:text-[#00f7f6] transition-all duration-200 py-2 px-1 cursor-pointer relative">API</a>
+            </div>
+            <!-- вход / регистрация -->
+            <div class="flex items-center space-x-5">
+                <%= link_to new_user_session_path, class: "text-white/70 hover:text-[#ffe600] text-sm font-bold uppercase tracking-wide transition-colors" do %>
+                    Войти
+                <% end %>
+                <%= link_to new_user_registration_path, class: "bg-[#ff3b7f] text-white px-5 py-2.5 text-sm font-bold uppercase tracking-widest shadow-[4px_4px_0_#ffe600] hover:shadow-[2px_2px_0_#ffe600] hover:translate-x-1 hover:translate-y-1 transition" do %>
+                    Регистрация
+                <% end %>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="gradient-bg text-white">
-        <div class="container mx-auto px-4 py-20">
-            <div class="max-w-4xl mx-auto text-center">
-                <h1 class="text-5xl md:text-6xl font-bold mb-6">Virtual Staging with one click</h1>
-                <p class="text-xl mb-10 text-gray-100">Upload a photo and our AI adds furniture in seconds.</p>
-                
-                <div class="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-6 mb-16">
-                    <button class="bg-white text-purple-700 px-8 py-4 rounded-xl text-lg font-semibold hover-scale flex items-center justify-center space-x-3">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <span>Upload image for free</span>
-                    </button>
-                    <div class="flex flex-col space-y-2">
-                        <div class="flex items-center space-x-2">
-                            <i class="fas fa-check-circle text-green-300"></i>
-                            <span>No sign up</span>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <i class="fas fa-check-circle text-green-300"></i>
-                            <span>No credit card required</span>
+    <!-- ========== ГЛАВНЫЙ ЭКРАН ========== -->
+    <section class="relative py-20 px-4 overflow-hidden" style="background: radial-gradient(circle at 80% 20%, #1a1022, #0b0d10);">
+        <div class="container mx-auto max-w-6xl relative z-20">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <!-- больше никаких "AI·interior·photo" — убрал нахуй -->
+                    <h1 class="text-6xl md:text-7xl font-black uppercase leading-[1.1] tracking-[-0.03em] mb-6">
+                        <span class="neon-pink">СТАЙЛИНГ</span><br/>
+                        <span class="text-white">ЗА</span> 
+                        <span class="neon-cyan">15 СЕКУНД</span>
+                    </h1>
+                    <p class="text-2xl text-white/80 font-light mb-8 max-w-xl border-l-4 border-[#ff3b7f] pl-6">
+                        Загрузи фото — нейросеть расставит мебель. Без подписок. Без кредиток.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+                        <a href="#" class="btn-flash px-10 py-5 text-lg inline-flex items-center gap-3">
+                            <span>📸</span> Загрузить бесплатно
+                        </a>
+                        <span class="flex items-center gap-3 text-white/70 text-base">
+                            <span class="bg-[#ffe600] w-2 h-2 rotate-45"></span> НЕ НУЖНА КАРТА
+                        </span>
+                    </div>
+                    <!-- соцпруф коротко -->
+                    <div class="flex mt-10 space-x-6 text-sm font-mono text-white/50">
+                        <span>⏻ 10 000+ АГЕНТОВ</span>
+                        <span>⚡ 15 СЕК В СРЕДНЕМ</span>
+                    </div>
+                </div>
+                <!-- BEFORE/AFTER СЛАЙДЕР — главная пушка -->
+                <div id="slider-container" class="relative rounded-none border-4 border-[#ffe600] shadow-[20px_20px_0px_#ff3b7f] bg-black cursor-ew-resize h-[400px] w-full">
+                    <img id="before-image" class="absolute top-0 left-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&auto=format&fit=crop" alt="пустая комната">
+                    <img id="after-image" class="absolute top-0 left-0 w-1/2 h-full object-cover after-image" src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&auto=format&fit=crop" style="width: 50%;" alt="обставленная комната">
+                    <div id="slider" class="absolute top-0 left-1/2 w-1.5 h-full bg-[#ffe600] shadow-[0_0_15px_#00f7f6] slider-line" style="left: 50%;"></div>
+                    <span class="absolute bottom-4 left-4 bg-black/80 text-[#ffe600] px-4 py-2 text-sm font-bold border border-[#ffe600]">ДО</span>
+                    <span class="absolute bottom-4 right-4 bg-black/80 text-[#00f7f6] px-4 py-2 text-sm font-bold border border-[#00f7f6]">ПОСЛЕ</span>
+                </div>
+            </div>
+        </div>
+        <!-- неоновые пятна -->
+        <div class="absolute top-20 right-0 w-96 h-96 bg-[#ff3b7f] rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-pulse"></div>
+        <div class="absolute bottom-0 left-0 w-80 h-80 bg-[#00f7f6] rounded-full mix-blend-multiply filter blur-[90px] opacity-20"></div>
+    </section>
+
+    <!-- ========== ПОЧЕМУ МЫ ========== -->
+    <section class="py-20 px-4 border-y border-[#ff3b7f]/30" style="background: #0f1116;">
+        <div class="container max-w-6xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-black uppercase text-center mb-4 tracking-tight"><span class="neon-pink">ПОЧЕМУ</span> <span class="text-white">VSAI?</span></h2>
+            <p class="text-xl text-[#ffe600] text-center max-w-2xl mx-auto border-b-2 border-[#ffe600] pb-4 mb-16 font-medium">10 000+ риелторов уже в деле</p>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+                <div class="print-card p-6 text-center border-t-4 border-t-[#ff3b7f]">
+                    <span class="text-4xl mb-3 inline-block">💰</span>
+                    <h3 class="text-lg font-bold text-white">$9/ФОТО</h3>
+                    <p class="text-white/60 text-sm">дешевле аренды</p>
+                </div>
+                <div class="print-card p-6 text-center border-t-4 border-t-[#00f7f6]">
+                    <span class="text-4xl mb-3">⚡</span>
+                    <h3 class="text-lg font-bold text-white">15 СЕК</h3>
+                    <p class="text-white/60 text-sm">мгновенно</p>
+                </div>
+                <div class="print-card p-6 text-center border-t-4 border-t-[#ffe600]">
+                    <span class="text-4xl mb-3">🛋️</span>
+                    <h3 class="text-lg font-bold text-white">УДАЛИМ МЕБЕЛЬ</h3>
+                    <p class="text-white/60 text-sm">старую, любую</p>
+                </div>
+                <div class="print-card p-6 text-center border-t-4 border-t-[#ff3b7f]">
+                    <span class="text-4xl mb-3">🖼️</span>
+                    <h3 class="text-lg font-bold text-white">ВСЕ КОМНАТЫ</h3>
+                    <p class="text-white/60 text-sm">единый стиль</p>
+                </div>
+                <div class="print-card p-6 text-center border-t-4 border-t-[#00f7f6]">
+                    <span class="text-4xl mb-3">👥</span>
+                    <h3 class="text-lg font-bold text-white">10K+</h3>
+                    <p class="text-white/60 text-sm">довольных агентов</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== ГАЛЕРЕЯ ========== -->
+    <section id="gallery" class="py-20 px-4 scroll-mt-20" style="background: #0b0d10;">
+        <div class="container max-w-6xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-black uppercase text-center mb-4"><span class="neon-cyan">ДО</span> <span style="color:#ffe600;">/</span> <span class="neon-pink">ПОСЛЕ</span></h2>
+            <p class="text-center text-white/70 text-xl mb-16 max-w-3xl mx-auto">реальные объекты, обработаны за секунды</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="print-card bg-[#0f1219] p-0 border-2 border-[#ffe600] shadow-[10px_10px_0_#ff3b7f]">
+                    <div class="h-56 overflow-hidden border-b-2 border-[#ffe600]">
+                        <img src="https://images.unsplash.com/photo-1600210492493-0946911123ea?w=800&auto=format&fit=crop" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-[#00f7f6]">ЛОФТ</h3>
+                            <span class="text-xs bg-[#ff3b7f] px-3 py-1">12 сек</span>
                         </div>
                     </div>
                 </div>
-
-                <!-- Before/After Visual -->
-                <div class="before-after-container max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl">
-                    <div class="relative h-96">
-                        <img id="before-image" src="https://images.unsplash.com/photo-1616594039964-ae9021a400a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" class="absolute top-0 left-0 w-full h-full object-cover" alt="Empty room">
-                        <img id="after-image" src="https://images.unsplash.com/photo-1616594039964-ae9021a400a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" class="absolute top-0 left-0 w-1/2 h-full object-cover" alt="Staged room">
-                        <div class="before-after-slider" id="slider"></div>
-                        <div class="absolute top-4 left-4 bg-black/60 text-white px-3 py-1 rounded">Before</div>
-                        <div class="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded">After</div>
+                <div class="print-card bg-[#0f1219] p-0 border-2 border-[#00f7f6] shadow-[10px_10px_0_#ffe600]">
+                    <div class="h-56 overflow-hidden border-b-2 border-[#00f7f6]">
+                        <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&auto=format&fit=crop" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-5">
+                        <h3 class="font-bold text-[#ffe600]">СПАЛЬНЯ</h3>
+                        <span class="text-xs bg-[#ff3b7f] px-3 py-1 inline-block mt-1">15 сек</span>
+                    </div>
+                </div>
+                <div class="print-card bg-[#0f1219] p-0 border-2 border-[#ff3b7f] shadow-[10px_10px_0_#00f7f6]">
+                    <div class="h-56 overflow-hidden border-b-2 border-[#ff3b7f]">
+                        <img src="https://images.unsplash.com/photo-1556912172-45b7abe8b7e1?w=800&auto=format&fit=crop" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-5">
+                        <h3 class="font-bold text-white">КУХНЯ</h3>
+                        <span class="text-xs bg-[#ffe600] text-black px-3 py-1">18 сек</span>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Value Proposition -->
-    <section class="py-20 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-800 mb-6">Why Choose VirtualStagingAI?</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Used by 10,000+ real estate professionals worldwide</p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-                <div class="text-center p-6">
-                    <div class="gradient-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-dollar-sign text-white text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Low Cost</h3>
-                    <p class="text-gray-600">Starting at $9 per photo</p>
-                </div>
-                <div class="text-center p-6">
-                    <div class="gradient-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-bolt text-white text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Instant Results</h3>
-                    <p class="text-gray-600">~15 seconds processing</p>
-                </div>
-                <div class="text-center p-6">
-                    <div class="gradient-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-couch text-white text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Furniture Removal</h3>
-                    <p class="text-gray-600">Remove existing furniture</p>
-                </div>
-                <div class="text-center p-6">
-                    <div class="gradient-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-images text-white text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Multi-View Staging</h3>
-                    <p class="text-gray-600">Consistent design across rooms</p>
-                </div>
-                <div class="text-center p-6">
-                    <div class="gradient-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fas fa-users text-white text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">10,000+ Users</h3>
-                    <p class="text-gray-600">Trusted by professionals</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Before & After Gallery -->
-    <section id="gallery" class="py-20 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-800 mb-6">See the Transformation: Before & After Gallery</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Real examples from our users</p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Gallery Item 1 -->
-                <div class="bg-white rounded-2xl overflow-hidden shadow-lg hover-scale">
-                    <div class="relative h-64">
-                        <div class="absolute inset-0 bg-gradient-to-r from-transparent to-black/30"></div>
-                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Living room transformation">
-                    </div>
-                    <div class="p-6">
-                        <h3 class="text-xl font-semibold mb-2">Modern Living Room</h3>
-                        <p class="text-gray-600 mb-4">Empty space transformed into a cozy living area</p>
-                        <div class="flex justify-between text-sm text-gray-500">
-                            <span><i class="fas fa-clock mr-1"></i> 12s processing</span>
-                            <span><i class="fas fa-couch mr-1"></i> Modern style</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Gallery Item 2 -->
-                <div class="bg-white rounded-2xl overflow-hidden shadow-lg hover-scale">
-                    <div class="relative h-64">
-                        <div class="absolute inset-0 bg-gradient-to-r from-transparent to-black/30"></div>
-                        <img src="https://images.unsplash.com/photo-1616594039964-ae9021a400a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Bedroom transformation">
-                    </div>
-                    <div class="p-6">
-                        <h3 class="text-xl font-semibold mb-2">Luxury Bedroom</h3>
-                        <p class="text-gray-600 mb-4">Empty bedroom staged for maximum appeal</p>
-                        <div class="flex justify-between text-sm text-gray-500">
-                            <span><i class="fas fa-clock mr-1"></i> 15s processing</span>
-                            <span><i class="fas fa-couch mr-1"></i> Luxury style</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Gallery Item 3 -->
-                <div class="bg-white rounded-2xl overflow-hidden shadow-lg hover-scale">
-                    <div class="relative h-64">
-                        <div class="absolute inset-0 bg-gradient-to-r from-transparent to-black/30"></div>
-                        <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Kitchen transformation">
-                    </div>
-                    <div class="p-6">
-                        <h3 class="text-xl font-semibold mb-2">Scandinavian Kitchen</h3>
-                        <p class="text-gray-600 mb-4">Minimalist kitchen with modern appliances</p>
-                        <div class="flex justify-between text-sm text-gray-500">
-                            <span><i class="fas fa-clock mr-1"></i> 18s processing</span>
-                            <span><i class="fas fa-couch mr-1"></i> Scandinavian</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Room Styles & Design Variations -->
-    <section id="styles" class="py-20 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-800 mb-6">Room Styles & Design Variations</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">One room, endless possibilities</p>
-            </div>
-            
+    <!-- ========== СТИЛИ ========== -->
+    <section id="styles" class="py-20 px-4 scroll-mt-20 border-y border-[#00f7f6]/30" style="background: #0e1015;">
+        <div class="container max-w-6xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-black uppercase text-center"><span class="text-[#ffe600]">∞</span> СТИЛИ <span class="text-[#ffe600]">∞</span></h2>
+            <p class="text-[#ff3b7f] text-center text-xl font-bold mb-16">одна комната — 8 вариантов</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <!-- Style 1 -->
-                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-purple-500">
-                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-gray-300 to-gray-400"></div>
-                    <h3 class="font-semibold text-lg mb-2">Original</h3>
-                    <p class="text-gray-600 text-sm">Empty room</p>
+                <div class="border-2 border-transparent hover:border-[#ff3b7f] bg-[#1a1d24] p-6 text-center transition">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-500 to-gray-700 rotate-12 shadow-[5px_5px_0_#ffe600]"></div>
+                    <h4 class="text-[#ffe600] font-bold">БАЗОВЫЙ</h4>
                 </div>
-                
-                <!-- Style 2 -->
-                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-blue-500">
-                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600"></div>
-                    <h3 class="font-semibold text-lg mb-2">Modern</h3>
-                    <p class="text-gray-600 text-sm">Clean lines, minimal</p>
+                <div class="border-2 border-transparent hover:border-[#00f7f6] bg-[#1a1d24] p-6 text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-cyan-400 -rotate-6 shadow-[5px_5px_0_#ff3b7f]"></div>
+                    <h4 class="text-[#00f7f6] font-bold">МОДЕРН</h4>
                 </div>
-                
-                <!-- Style 3 -->
-                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-yellow-500">
-                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600"></div>
-                    <h3 class="font-semibold text-lg mb-2">Mid-Century</h3>
-                    <p class="text-gray-600 text-sm">Retro vibes</p>
+                <div class="border-2 border-transparent hover:border-[#ffe600] bg-[#1a1d24] p-6 text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-yellow-400 to-amber-600 rotate-12 shadow-[5px_5px_0_#00f7f6]"></div>
+                    <h4 class="text-[#ffe600] font-bold">МИД-СЕНЧУРИ</h4>
                 </div>
-                
-                <!-- Style 4 -->
-                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-gray-500">
-                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-gray-100 to-gray-300"></div>
-                    <h3 class="font-semibold text-lg mb-2">Scandinavian</h3>
-                    <p class="text-gray-600 text-sm">Light & airy</p>
-                </div>
-                
-                <!-- Style 5 -->
-                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-gray-800">
-                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-gray-700 to-gray-900"></div>
-                    <h3 class="font-semibold text-lg mb-2">Industrial</h3>
-                    <p class="text-gray-600 text-sm">Raw materials</p>
-                </div>
-                
-                <!-- Style 6 -->
-                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-yellow-400">
-                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-yellow-300 to-yellow-500"></div>
-                    <h3 class="font-semibold text-lg mb-2">Luxury</h3>
-                    <p class="text-gray-600 text-sm">High-end finishes</p>
-                </div>
-                
-                <!-- Style 7 -->
-                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-blue-300">
-                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-blue-200 to-blue-400"></div>
-                    <h3 class="font-semibold text-lg mb-2">Coastal</h3>
-                    <p class="text-gray-600 text-sm">Beach house feel</p>
-                </div>
-                
-                <!-- Style 8 -->
-                <div class="room-style-card bg-gray-50 rounded-xl p-6 text-center border-2 border-transparent hover:border-green-500">
-                    <div class="w-20 h-20 mx-auto mb-4 rounded-lg bg-gradient-to-br from-green-400 to-green-600"></div>
-                    <h3 class="font-semibold text-lg mb-2">Farmhouse</h3>
-                    <p class="text-gray-600 text-sm">Rustic charm</p>
+                <div class="border-2 border-transparent hover:border-[#ff3b7f] bg-[#1a1d24] p-6 text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-stone-200 to-stone-400 -rotate-6 shadow-[5px_5px_0_#00f7f6]"></div>
+                    <h4 class="text-white font-bold">СКАНДИ</h4>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Buyer & Agent Benefits -->
-    <section class="py-20 gradient-bg text-white">
-        <div class="container mx-auto px-4">
-            <div class="max-w-4xl mx-auto text-center">
-                <h2 class="text-4xl font-bold mb-8">Why Virtual Staging Works for Real Estate</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8">
-                        <div class="text-5xl font-bold mb-4">83%</div>
-                        <p class="text-xl">of buyers say staging helps them visualize the property</p>
-                    </div>
-                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8">
-                        <div class="text-5xl font-bold mb-4">2x</div>
-                        <p class="text-xl">Faster sales for staged properties vs. empty ones</p>
-                    </div>
-                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8">
-                        <div class="text-5xl font-bold mb-4">17%</div>
-                        <p class="text-xl">Higher offers on staged properties</p>
-                    </div>
+    <!-- ========== СТАТИСТИКА ========== -->
+    <section class="py-20 px-4" style="background: #0b0d10;">
+        <div class="container max-w-5xl mx-auto text-center">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div><span class="stat-num">83%</span><p class="text-white text-xl font-light mt-2">покупателей видят потенциал</p></div>
+                <div><span class="stat-num">2X</span><p class="text-white text-xl font-light mt-2">быстрее продажа</p></div>
+                <div><span class="stat-num">17%</span><p class="text-white text-xl font-light mt-2">выше цена</p></div>
+            </div>
+            <p class="text-2xl text-white/80 max-w-3xl mx-auto mt-16 border-t-2 border-[#ff3b7f] pt-10">10 000+ агентов. Хватит продавать пустые коробки.</p>
+            <a href="#" class="btn-cyan inline-block mt-10 px-14 py-5 text-lg">ЗАСТАЙЛИРОВАТЬ</a>
+        </div>
+    </section>
+
+    <!-- ========== MULTI-VIEW ========== -->
+    <section class="py-20 px-4" style="background: #0e1117;">
+        <div class="container max-w-6xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
+            <div>
+                <span class="text-[#00f7f6] text-sm border border-[#00f7f6] px-4 py-2 tracking-[.25em]">НОВОЕ — СКВОЗНОЙ СТАЙЛИНГ</span>
+                <h2 class="text-5xl font-black uppercase my-6"><span class="neon-pink">ОДНА</span> <span class="text-white">МЕБЕЛЬ</span><br/><span class="neon-cyan">ВО ВСЕХ КОМНАТАХ</span></h2>
+                <div class="space-y-5">
+                    <div class="flex items-center gap-4"><span class="text-[#ffe600] text-3xl">▹</span><span class="text-xl">единый дизайн-код</span></div>
+                    <div class="flex items-center gap-4"><span class="text-[#ffe600] text-3xl">▹</span><span class="text-xl">экономия 50% против покадрового</span></div>
                 </div>
-                
-                <p class="text-xl mb-10">Join 10,000+ real estate agents who trust VirtualStagingAI to sell properties faster and for higher prices.</p>
-                
-                <button class="bg-white text-purple-700 px-10 py-4 rounded-xl text-lg font-semibold hover:opacity-90 transition">
-                    Start Staging Now
-                </button>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <img class="border-2 border-[#ff3b7f] shadow-[8px_8px_0_#00f7f6]" src="https://images.unsplash.com/photo-1630699372507-7da49d7c4fa1?w=600">
+                <img class="border-2 border-[#00f7f6] shadow-[8px_8px_0_#ffe600]" src="https://images.unsplash.com/photo-1618219904412-8dc3ecdb4ce3?w=600">
+                <img class="border-2 border-[#ffe600] shadow-[8px_8px_0_#ff3b7f]" src="https://images.unsplash.com/photo-1556909212-d5b604d0c90d?w=600">
+                <img class="border-2 border-[#ff3b7f] shadow-[8px_8px_0_#00f7f6]" src="https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=600">
             </div>
         </div>
     </section>
 
-    <!-- New Feature - Multi-View Staging -->
-    <section class="py-20 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div>
-                    <h2 class="text-4xl font-bold text-gray-800 mb-6">Multi-View Staging</h2>
-                    <p class="text-xl text-gray-600 mb-6">Style your entire property from multiple angles with consistent furniture and design.</p>
-                    <ul class="space-y-4 mb-8">
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3 text-xl"></i>
-                            <span class="text-lg">Same furniture across all views</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3 text-xl"></i>
-                            <span class="text-lg">Consistent design language</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3 text-xl"></i>
-                            <span class="text-lg">Perfect for entire homes or apartments</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3 text-xl"></i>
-                            <span class="text-lg">Save 50% compared to single-room staging</span>
-                        </li>
-                    </ul>
+    <!-- ========== КАК РАБОТАЕТ ========== -->
+    <section id="how" class="py-20 px-4 scroll-mt-20" style="background: #0b0d10;">
+        <div class="container max-w-5xl mx-auto">
+            <h2 class="text-5xl font-black uppercase text-center neon-pink">АЛГОРИТМ</h2>
+            <p class="text-[#ffe600] text-center text-2xl font-bold mb-16">ТРИ ШАГА</p>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="print-card p-8 text-center border-b-4 border-b-[#ffe600]">
+                    <span class="text-6xl block mb-4">📤</span>
+                    <h3 class="text-2xl font-bold text-[#00f7f6]">1. ЗАГРУЗКА</h3>
+                    <p class="text-white/60">пустая, заставленная — неважно</p>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="rounded-xl overflow-hidden shadow-lg">
-                        <img src="https://images.unsplash.com/photo-1600566752355-35792bedcfea?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover" alt="Living room view 1">
-                        <div class="p-4 bg-gray-50">
-                            <p class="font-medium">Living Room - View 1</p>
-                        </div>
-                    </div>
-                    <div class="rounded-xl overflow-hidden shadow-lg">
-                        <img src="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover" alt="Living room view 2">
-                        <div class="p-4 bg-gray-50">
-                            <p class="font-medium">Living Room - View 2</p>
-                        </div>
-                    </div>
-                    <div class="rounded-xl overflow-hidden shadow-lg">
-                        <img src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover" alt="Kitchen view">
-                        <div class="p-4 bg-gray-50">
-                            <p class="font-medium">Kitchen</p>
-                        </div>
-                    </div>
-                    <div class="rounded-xl overflow-hidden shadow-lg">
-                        <img src="https://images.unsplash.com/photo-1600566752355-35792bedcfea?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="w-full h-64 object-cover" alt="Bedroom view">
-                        <div class="p-4 bg-gray-50">
-                            <p class="font-medium">Bedroom</p>
-                        </div>
-                    </div>
+                <div class="print-card p-8 text-center border-b-4 border-b-[#ff3b7f]">
+                    <span class="text-6xl block mb-4">🧠</span>
+                    <h3 class="text-2xl font-bold text-[#ffe600]">2. ОБРАБОТКА</h3>
+                    <p class="text-white/60">~15 секунд, 8 стилей</p>
+                </div>
+                <div class="print-card p-8 text-center border-b-4 border-b-[#00f7f6]">
+                    <span class="text-6xl block mb-4">⬇️</span>
+                    <h3 class="text-2xl font-bold text-[#ff3b7f]">3. ГОТОВО</h3>
+                    <p class="text-white/60">MLS, соцсети, высокое разрешение</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- How It Works -->
-    <section id="how" class="py-20 bg-gray-50">
-        <div class="container mx-auto px-4">
+    <!-- ========== СРАВНЕНИЕ ========== -->
+    <section class="py-20 px-4 border-t border-[#ff3b7f]" style="background: #0f1116;">
+        <div class="container max-w-5xl mx-auto">
+            <h2 class="text-4xl font-black uppercase text-center text-white">ПРОТИВ ОБЫЧНОГО СТАЙЛИНГА</h2>
+            <div class="grid md:grid-cols-2 gap-10 mt-16">
+                <div><span class="text-[#ffe600] text-2xl mr-3">⚡</span> <span class="text-xl font-bold text-white">15 секунд против недель</span></div>
+                <div><span class="text-[#ffe600] text-2xl mr-3">💰</span> <span class="text-xl font-bold text-white">дешевле на 90%</span></div>
+                <div><span class="text-[#ffe600] text-2xl mr-3">🔄</span> <span class="text-xl font-bold text-white">сколько угодно попыток</span></div>
+                <div><span class="text-[#ffe600] text-2xl mr-3">🤖</span> <span class="text-xl font-bold text-white">1 млн+ интерьеров в обучении</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== ТАРИФНЫЕ ПЛАНЫ VSAI ========== -->
+    <section id="pricing" class="py-20 px-4 scroll-mt-20" style="background: var(--chrome);">
+        <div class="container mx-auto max-w-6xl">
+            <!-- Заголовок -->
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-800 mb-6">How It Works</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Three simple steps to transform any room</p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                <!-- Step 1 -->
-                <div class="bg-white rounded-2xl p-8 shadow-lg text-center hover-scale">
-                    <div class="gradient-bg w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <span class="text-white text-3xl font-bold">1</span>
-                    </div>
-                    <h3 class="text-2xl font-semibold mb-4">Upload your picture</h3>
-                    <p class="text-gray-600 mb-6">Upload any room photo - empty, furnished, or cluttered.</p>
-                    <div class="text-purple-600">
-                        <i class="fas fa-cloud-upload-alt text-4xl"></i>
-                    </div>
-                </div>
-                
-                <!-- Step 2 -->
-                <div class="bg-white rounded-2xl p-8 shadow-lg text-center hover-scale">
-                    <div class="gradient-bg w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <span class="text-white text-3xl font-bold">2</span>
-                    </div>
-                    <h3 class="text-2xl font-semibold mb-4">AI processes the image</h3>
-                    <p class="text-gray-600 mb-6">Our AI analyzes and stages the room in ~15 seconds.</p>
-                    <div class="text-purple-600">
-                        <i class="fas fa-brain text-4xl"></i>
-                    </div>
-                </div>
-                
-                <!-- Step 3 -->
-                <div class="bg-white rounded-2xl p-8 shadow-lg text-center hover-scale">
-                    <div class="gradient-bg w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <span class="text-white text-3xl font-bold">3</span>
-                    </div>
-                    <h3 class="text-2xl font-semibold mb-4">Download the staged photo</h3>
-                    <p class="text-gray-600 mb-6">Get high-resolution, MLS-ready images instantly.</p>
-                    <div class="text-purple-600">
-                        <i class="fas fa-download text-4xl"></i>
-                    </div>
+                <h2 class="text-5xl md:text-6xl font-black uppercase mb-4">
+                    <span class="neon-pink">ТАРИФЫ</span> 
+                    <span class="text-white">VSAI</span>
+                </h2>
+                <p class="text-xl text-[#ffe600] max-w-2xl mx-auto border-b-2 border-[#ffe600] pb-4 font-medium">
+                    Выбери свой пакет токенов
+                </p>
+                <div class="flex justify-center mt-6 space-x-4 text-white/60 text-sm flex-wrap gap-4">
+                    <span class="flex items-center"><span class="w-2 h-2 bg-[#ff3b7f] mr-2"></span> Без подписок</span>
+                    <span class="flex items-center"><span class="w-2 h-2 bg-[#00f7f6] mr-2"></span> Токены не сгорают</span>
+                    <span class="flex items-center"><span class="w-2 h-2 bg-[#ffe600] mr-2"></span> Мгновенная активация</span>
                 </div>
             </div>
-            
-            <div class="text-center mt-12">
-                <button class="gradient-bg text-white px-10 py-4 rounded-xl text-lg font-semibold hover:opacity-90 transition flex items-center mx-auto space-x-3">
-                    <i class="fas fa-play-circle"></i>
-                    <span>See How It Works (2 min video)</span>
-                </button>
-            </div>
-        </div>
-    </section>
 
-    <!-- Competitive Advantages -->
-    <section class="py-20 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-800 mb-6">Why VirtualStagingAI is Better</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Compare with traditional staging and manual alternatives</p>
-            </div>
-            
-            <div class="max-w-4xl mx-auto">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Advantages List -->
-                    <div class="space-y-6">
-                        <div class="flex items-start">
-                            <i class="fas fa-bolt text-green-500 text-xl mt-1 mr-4"></i>
-                            <div>
-                                <h3 class="text-xl font-semibold mb-2">Instant results (~15s)</h3>
-                                <p class="text-gray-600">Traditional staging takes days or weeks</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start">
-                            <i class="fas fa-hand-sparkles text-green-500 text-xl mt-1 mr-4"></i>
-                            <div>
-                                <h3 class="text-xl font-semibold mb-2">Effortless staging</h3>
-                                <p class="text-gray-600">No physical labor or furniture rental</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start">
-                            <i class="fas fa-dollar-sign text-green-500 text-xl mt-1 mr-4"></i>
-                            <div>
-                                <h3 class="text-xl font-semibold mb-2">Cost-effective</h3>
-                                <p class="text-gray-600">90% cheaper than physical staging</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start">
-                            <i class="fas fa-infinity text-green-500 text-xl mt-1 mr-4"></i>
-                            <div>
-                                <h3 class="text-xl font-semibold mb-2">Unlimited regenerations</h3>
-                                <p class="text-gray-600">Try different styles until perfect</p>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Сетка тарифов -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <% 
+                  # Маппинг стилей для тарифов
+                  package_styles = {
+                    'СТАРТОВЫЙ' => {
+                      icon: '🌱',
+                      accent_color: '#ff3b7f',
+                      accent_class: 'neon-pink',
+                      border_hover: 'hover:border-[#ff3b7f]',
+                      bullet_color: '#ffe600',
+                      button_class: 'btn-flash',
+                      is_popular: false,
+                      features: ['Все стили'],
+                      disabled_features: ['Multi-view']
+                    },
+                    'БАЗОВЫЙ' => {
+                      icon: '⚡',
+                      accent_color: '#00f7f6',
+                      accent_class: 'neon-cyan',
+                      border_hover: 'border-2 border-[#00f7f6] hover:shadow-[0_25px_40px_-12px_rgba(0,247,246,0.5)]',
+                      bullet_color: '#00f7f6',
+                      button_class: 'btn-cyan',
+                      is_popular: true,
+                      features: ['Все стили', 'Multi-view', 'Приоритет'],
+                      disabled_features: []
+                    },
+                    'ПРОФИ' => {
+                      icon: '🚀',
+                      accent_color: '#ffe600',
+                      accent_class: 'neon-yellow',
+                      border_hover: 'hover:border-[#ffe600] hover:shadow-[0_25px_40px_-12px_rgba(255,230,0,0.5)]',
+                      bullet_color: '#ffe600',
+                      button_class: 'btn-flash',
+                      is_popular: false,
+                      features: ['Все стили', 'Multi-view', 'VIP поддержка'],
+                      disabled_features: []
+                    },
+                    'АГЕНТСКИЙ' => {
+                      icon: '🏢',
+                      accent_color: '#c724b1',
+                      accent_class: '',
+                      border_hover: 'hover:border-[#c724b1] hover:shadow-[0_25px_40px_-12px_rgba(199,36,177,0.5)]',
+                      bullet_color: '#c724b1',
+                      button_class: '',
+                      is_popular: false,
+                      features: ['Всё из Профи', 'White-label', 'Команда до 5 чел'],
+                      disabled_features: []
+                    }
+                  }
+                %>
+                
+                <% @token_packages.each_with_index do |package, index| %>
+                    <% 
+                      style = package_styles[package.name] || {
+                        icon: '📦',
+                        accent_color: '#ff3b7f',
+                        accent_class: 'neon-pink',
+                        border_hover: 'hover:border-[#ff3b7f]',
+                        bullet_color: '#ffe600',
+                        button_class: 'btn-flash',
+                        is_popular: false,
+                        features: ['Все стили'],
+                        disabled_features: []
+                      }
+                      price_dollars = package.price_cents / 100.0
+                      price_per_token = package.price_cents.to_f / package.tokens_amount
+                      price_per_token_formatted = sprintf("%.2f", price_per_token / 100.0)
+                    %>
                     
-                    <div class="space-y-6">
-                        <div class="flex items-start">
-                            <i class="fas fa-robot text-green-500 text-xl mt-1 mr-4"></i>
-                            <div>
-                                <h3 class="text-xl font-semibold mb-2">Highly accurate AI</h3>
-                                <p class="text-gray-600">Trained on 1M+ interior images</p>
+                    <div class="print-card p-6 <%= style[:border_hover] %> transition-all duration-300 <%= 'relative' if style[:is_popular] %>">
+                        <% if style[:is_popular] %>
+                            <!-- Бейдж популярного -->
+                            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-[#00f7f6] text-black px-6 py-1.5 text-xs font-bold uppercase whitespace-nowrap">
+                                ПОПУЛЯРНЫЙ
+                            </div>
+                        <% end %>
+                        
+                        <div class="<%= 'mt-4' if style[:is_popular] %> mb-6">
+                            <span class="text-4xl mb-2 block"><%= style[:icon] %></span>
+                            <h3 class="text-2xl font-bold text-white"><%= package.name %></h3>
+                            <div class="flex items-baseline mt-4">
+                                <% if style[:accent_class].present? %>
+                                    <span class="text-4xl font-bold <%= style[:accent_class] %>">$<%= price_dollars.to_i %></span>
+                                <% else %>
+                                    <span class="text-4xl font-bold" style="color: var(--magenta); text-shadow: 0 0 8px var(--magenta), 0 0 20px rgba(199, 36, 177, 0.5);">$<%= price_dollars.to_i %></span>
+                                <% end %>
+                                <span class="text-white/40 ml-2">/пакет</span>
                             </div>
                         </div>
-                        <div class="flex items-start">
-                            <i class="fas fa-file-contract text-green-500 text-xl mt-1 mr-4"></i>
-                            <div>
-                                <h3 class="text-xl font-semibold mb-2">MLS compliant</h3>
-                                <p class="text-gray-600">Meets all real estate listing standards</p>
+                        
+                        <div class="space-y-3 mb-8">
+                            <div class="flex items-center">
+                                <span class="mr-3" style="color: <%= style[:bullet_color] %>;">▶</span>
+                                <span class="text-white/80"><span class="text-white font-bold"><%= package.tokens_amount %></span> токенов</span>
                             </div>
-                        </div>
-                        <div class="flex items-start">
-                            <i class="fas fa-mobile-alt text-green-500 text-xl mt-1 mr-4"></i>
-                            <div>
-                                <h3 class="text-xl font-semibold mb-2">Mobile-friendly</h3>
-                                <p class="text-gray-600">Stage directly from your phone</p>
+                            <div class="flex items-center">
+                                <span class="mr-3" style="color: <%= style[:bullet_color] %>;">▶</span>
+                                <span class="text-white/80"><span class="text-white font-bold">~<%= package.tokens_amount %></span> фото</span>
                             </div>
+                            <% style[:features].each do |feature| %>
+                                <div class="flex items-center">
+                                    <span class="mr-3" style="color: <%= style[:bullet_color] %>;">▶</span>
+                                    <span class="text-white/80"><%= feature %></span>
+                                </div>
+                            <% end %>
+                            <% style[:disabled_features].each do |feature| %>
+                                <div class="flex items-center opacity-50">
+                                    <span class="text-white/40 mr-3">▶</span>
+                                    <span class="text-white/40"><%= feature %></span>
+                                </div>
+                            <% end %>
                         </div>
-                        <div class="flex items-start">
-                            <i class="fas fa-shield-alt text-green-500 text-xl mt-1 mr-4"></i>
-                            <div>
-                                <h3 class="text-xl font-semibold mb-2">Secure & private</h3>
-                                <p class="text-gray-600">Your images are never shared</p>
-                            </div>
-                        </div>
+                        
+                        <% if style[:button_class].present? %>
+                            <a href="#" class="block w-full <%= style[:button_class] %> text-center py-4">
+                                КУПИТЬ
+                            </a>
+                        <% else %>
+                            <a href="#" class="block w-full bg-[#c724b1] text-white font-bold uppercase tracking-wider text-center py-4 shadow-[6px_6px_0_#ff3b7f] hover:shadow-[3px_3px_0_#ffe600] hover:translate-x-1 hover:translate-y-1 transition-all border-none" style="border-radius: 2px;">
+                                КУПИТЬ
+                            </a>
+                        <% end %>
+                        <p class="text-center text-white/40 text-xs mt-4">$<%= price_per_token_formatted %> за токен</p>
                     </div>
+                <% end %>
+            </div>
+
+            <!-- Дополнительная информация -->
+            <div class="mt-16 text-center">
+                <div class="inline-flex items-center space-x-3 print-card px-8 py-4">
+                    <span class="text-[#ffe600] text-2xl">⟁</span>
+                    <p class="text-white/80 text-sm">
+                        <span class="text-white font-bold">Токены не сгорают</span> — используй когда удобно. 
+                        Есть вопросы? <a href="#" class="text-[#00f7f6] underline underline-offset-4 hover:text-[#ff3b7f] transition-colors">Напиши в поддержку</a>
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-16">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
-                <!-- Company -->
-                <div>
-                    <div class="flex items-center space-x-2 mb-6">
-                        <div class="gradient-bg w-8 h-8 rounded-lg"></div>
-                        <span class="text-xl font-bold">VirtualStagingAI</span>
-                    </div>
-                    <p class="text-gray-400 mb-6">Transform empty rooms into dream spaces with AI-powered virtual staging.</p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook text-xl"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram text-xl"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-youtube text-xl"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin text-xl"></i></a>
-                    </div>
-                </div>
-                
-                <!-- Navigation -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-6">Navigation</h3>
-                    <ul class="space-y-3">
-                        <li><a href="#" class="text-gray-400 hover:text-white">Home</a></li>
-                        <li><a href="#gallery" class="text-gray-400 hover:text-white">Gallery</a></li>
-                        <li><a href="#pricing" class="text-gray-400 hover:text-white">Pricing</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Log in</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Careers</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">FAQ</a></li>
-                    </ul>
-                </div>
-                
-                <!-- Programs -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-6">Programs</h3>
-                    <ul class="space-y-3">
-                        <li><a href="#" class="text-gray-400 hover:text-white">Affiliate Program</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Whitelabel Program</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">API Access</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Bulk Orders</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Enterprise</a></li>
-                    </ul>
-                </div>
-                
-                <!-- Legal -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-6">Legal</h3>
-                    <ul class="space-y-3">
-                        <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Refund Policy</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Cookie Policy</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">GDPR</a></li>
-                    </ul>
-                </div>
-                
-                <!-- Newsletter -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-6">Stay Updated</h3>
-                    <p class="text-gray-400 mb-4">Get tips on virtual staging and real estate marketing.</p>
-                    <div class="flex">
-                        <input type="email" placeholder="Your email" class="bg-gray-800 text-white px-4 py-3 rounded-l-lg flex-grow focus:outline-none">
-                        <button class="gradient-bg px-4 py-3 rounded-r-lg font-medium hover:opacity-90">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="pt-8 border-t border-gray-800 text-center text-gray-400">
-                <p>&copy; 2024 VirtualStagingAI.app. All rights reserved.</p>
-                <p class="mt-2 text-sm">Made with <i class="fas fa-heart text-red-500"></i> for real estate professionals worldwide</p>
+    <!-- ========== ПОДВАЛ ========== -->
+    <footer class="bg-black py-12 px-4 border-t-4 border-[#ffe600]">
+        <div class="container max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <span class="text-2xl font-black text-white">VSAI</span>
+                <span class="text-[#ff3b7f] text-sm">© 2024 — НЕЙРОСЕТЕВОЙ СТАЙЛИНГ</span>
             </div>
         </div>
     </footer>
 
-    <!-- Pricing Section (hidden by default, linked from navigation) -->
-    <section id="pricing" class="hidden py-20 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-800 mb-6">Simple, Transparent Pricing</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Pay per image, no subscriptions required</p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                <!-- Pricing Card 1 -->
-                <div class="bg-white rounded-2xl p-8 shadow-lg text-center">
-                    <h3 class="text-2xl font-semibold mb-4">Pay As You Go</h3>
-                    <div class="text-5xl font-bold mb-6">$19<span class="text-xl text-gray-500">/image</span></div>
-                    <ul class="space-y-4 mb-8 text-left">
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>1 image at a time</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>All design styles</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>High resolution</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>Furniture removal</span>
-                        </li>
-                    </ul>
-                    <button class="w-full bg-gray-100 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-200 transition">
-                        Get Started
-                    </button>
-                </div>
-                
-                <!-- Pricing Card 2 (Recommended) -->
-                <div class="bg-white rounded-2xl p-8 shadow-lg text-center border-2 border-purple-500 relative">
-                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                        MOST POPULAR
-                    </div>
-                    <h3 class="text-2xl font-semibold mb-4">Professional Pack</h3>
-                    <div class="text-5xl font-bold mb-6">$99<span class="text-xl text-gray-500">/10 images</span></div>
-                    <p class="text-gray-600 mb-6">$9.90 per image</p>
-                    <ul class="space-y-4 mb-8 text-left">
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>10 images total</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>All design styles</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>High resolution</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>Multi-view staging</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>Priority processing</span>
-                        </li>
-                    </ul>
-                    <button class="w-full gradient-bg text-white py-3 rounded-lg font-semibold hover:opacity-90 transition">
-                        Choose Plan
-                    </button>
-                </div>
-                
-                <!-- Pricing Card 3 -->
-                <div class="bg-white rounded-2xl p-8 shadow-lg text-center">
-                    <h3 class="text-2xl font-semibold mb-4">Agency Bundle</h3>
-                    <div class="text-5xl font-bold mb-6">$499<span class="text-xl text-gray-500">/100 images</span></div>
-                    <p class="text-gray-600 mb-6">$4.99 per image</p>
-                    <ul class="space-y-4 mb-8 text-left">
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>100 images total</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>All design styles</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>Highest resolution</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>API access included</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>White label option</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check text-green-500 mr-3"></i>
-                            <span>Dedicated support</span>
-                        </li>
-                    </ul>
-                    <button class="w-full bg-gray-100 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-200 transition">
-                        Contact Sales
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- JavaScript for interactive elements -->
+    <!-- СКРИПТЫ: слайдер, показ цен -->
     <script>
-        // Before/After Slider
+        // Ждем полной загрузки DOM
         document.addEventListener('DOMContentLoaded', function() {
+            // before/after слайдер
+            const container = document.getElementById('slider-container');
+            const after = document.getElementById('after-image');
             const slider = document.getElementById('slider');
-            const beforeImage = document.getElementById('before-image');
-            const afterImage = document.getElementById('after-image');
-            let isDragging = false;
+            let drag = false;
 
-            if (slider && beforeImage && afterImage) {
-                slider.addEventListener('mousedown', function() {
-                    isDragging = true;
-                });
+            if (container && after && slider) {
+                const move = (x) => {
+                    const rect = container.getBoundingClientRect();
+                    let offset = x - rect.left;
+                    if (offset < 0) offset = 0;
+                    if (offset > rect.width) offset = rect.width;
+                    const percent = (offset / rect.width) * 100;
+                    after.style.width = percent + '%';
+                    slider.style.left = percent + '%';
+                };
 
-                document.addEventListener('mousemove', function(e) {
-                    if (!isDragging) return;
-                    
-                    const container = slider.parentElement;
-                    const containerRect = container.getBoundingClientRect();
-                    let x = e.clientX - containerRect.left;
-                    
-                    // Keep slider within bounds
-                    x = Math.max(0, Math.min(x, containerRect.width));
-                    
-                    // Update slider position
-                    slider.style.left = x + 'px';
-                    
-                    // Update image widths
-                    const percentage = (x / containerRect.width) * 100;
-                    afterImage.style.width = percentage + '%';
-                });
-
-                document.addEventListener('mouseup', function() {
-                    isDragging = false;
-                });
-
-                // Touch events for mobile
-                slider.addEventListener('touchstart', function() {
-                    isDragging = true;
-                });
-
-                document.addEventListener('touchmove', function(e) {
-                    if (!isDragging) return;
-                    
-                    const container = slider.parentElement;
-                    const containerRect = container.getBoundingClientRect();
-                    let x = e.touches[0].clientX - containerRect.left;
-                    
-                    x = Math.max(0, Math.min(x, containerRect.width));
-                    slider.style.left = x + 'px';
-                    
-                    const percentage = (x / containerRect.width) * 100;
-                    afterImage.style.width = percentage + '%';
-                });
-
-                document.addEventListener('touchend', function() {
-                    isDragging = false;
-                });
+                container.addEventListener('mousedown', (e) => { drag = true; move(e.clientX); });
+                window.addEventListener('mousemove', (e) => { if (drag) { e.preventDefault(); move(e.clientX); } });
+                window.addEventListener('mouseup', () => { drag = false; });
+                container.addEventListener('touchstart', (e) => { drag = true; move(e.touches[0].clientX); });
+                window.addEventListener('touchmove', (e) => { if (drag) { e.preventDefault(); move(e.touches[0].clientX); } });
+                window.addEventListener('touchend', () => { drag = false; });
             }
 
-            // Smooth scrolling for anchor links
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
+            // Плавная прокрутка для всех якорных ссылок (делегирование событий)
+            document.addEventListener('click', function(e) {
+                // Проверяем, что клик был по ссылке с якорем (только для якорных ссылок на этой странице)
+                const anchor = e.target.closest('a[href^="#"]');
+                if (!anchor) return;
+                
+                // НЕ блокируем ссылки, которые ведут на другие страницы (не начинаются с #)
+                const href = anchor.getAttribute('href');
+                if (!href || !href.startsWith('#')) {
+                    return; // Позволяем обычным ссылкам работать нормально
+                }
+                
+                // Пропускаем пустые ссылки и ссылки только с #
+                if (href === '#' || href === '') {
+                    return;
+                }
+                
+                const targetId = href.substring(1);
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
                     e.preventDefault();
-                    const targetId = this.getAttribute('href');
-                    if (targetId === '#') return;
+                    e.stopPropagation();
                     
-                    const targetElement = document.querySelector(targetId);
-                    if (targetElement) {
-                        window.scrollTo({
-                            top: targetElement.offsetTop - 80,
-                            behavior: 'smooth'
-                        });
-                    }
-                });
-            });
-
-            // Show pricing section when clicking pricing link
-            document.querySelectorAll('a[href="#pricing"]').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    const pricingSection = document.getElementById('pricing');
-                    if (pricingSection) {
-                        pricingSection.classList.remove('hidden');
+                    // Специальная обработка для pricing (показать скрытую секцию)
+                    if (targetId === 'pricing') {
+                        targetElement.classList.remove('hidden');
+                        // Небольшая задержка для рендеринга перед прокруткой
                         setTimeout(() => {
+                            const offsetTop = targetElement.offsetTop - 80; // Учет высоты sticky nav
                             window.scrollTo({
-                                top: pricingSection.offsetTop - 80,
+                                top: offsetTop,
                                 behavior: 'smooth'
                             });
                         }, 100);
+                    } else {
+                        // Обычная плавная прокрутка для остальных секций
+                        const offsetTop = targetElement.offsetTop - 80; // Учет высоты sticky nav
+                        window.scrollTo({
+                            top: offsetTop,
+                            behavior: 'smooth'
+                        });
                     }
-                });
+                }
             });
         });
     </script>
-</div>
+</body>
+</html>

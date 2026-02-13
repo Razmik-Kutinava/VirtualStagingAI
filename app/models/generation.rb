@@ -4,7 +4,16 @@ class Generation < ApplicationRecord
   belongs_to :output_image, class_name: "Image", optional: true
   belongs_to :style
 
+  has_many :favorites, dependent: :destroy
   has_many :token_transactions, dependent: :destroy
 
-  enum :status, { queued: "queued", running: "running", succeeded: "succeeded", failed: "failed" }
+  enum :status, { 
+    queued: "queued", 
+    running: "running", 
+    succeeded: "succeeded", 
+    failed: "failed",
+    cancelled: "cancelled"
+  }
+
+  validates :tokens_spent, presence: true, numericality: { greater_than: 0 }
 end
