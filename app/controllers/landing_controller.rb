@@ -9,6 +9,17 @@ class LandingController < ApplicationController
     # end
     
     # Получаем активные тарифы, отсортированные по цене
-    @token_packages = TokenPackage.where(active: true).order(:price_cents)
+    # Обрабатываем ошибки БД на случай, если база данных не готова
+    begin
+      @token_packages = TokenPackage.where(active: true).order(:price_cents)
+    rescue ActiveRecord::StatementInvalid, ActiveRecord::ConnectionNotEstablished, ActiveRecord::NoDatabaseError => e
+      Rails.logger.error "Database error in LandingController#index: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      @token_packages = []
+    rescue => e
+      Rails.logger.error "Unexpected error in LandingController#index: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      @token_packages = []
+    end
   end
 end

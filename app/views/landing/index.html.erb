@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
     <title>VirtualStagingAI — нейростайлинг для риелторов</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" href="<%= asset_path('icon.png') %>">
+    <link rel="icon" type="image/svg+xml" href="<%= asset_path('icon.svg') %>">
     <!-- Space Grotesx — гротеск с характером -->
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <style>
         /* ---------- ПОЛНАЯ ПЕРЕСБОРКА. ТОЛЬКО НЕОН. ТОЛЬКО ХАРД ---------- */
         :root {
@@ -388,8 +391,8 @@
                 </div>
                 <!-- BEFORE/AFTER СЛАЙДЕР — главная пушка -->
                 <div id="slider-container" class="relative rounded-none border-2 sm:border-4 border-[#ffe600] shadow-[10px_10px_0px_#ff3b7f] sm:shadow-[20px_20px_0px_#ff3b7f] bg-black cursor-ew-resize h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px] w-full mt-6 lg:mt-0">
-                    <img id="before-image" class="absolute top-0 left-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&auto=format&fit=crop" alt="пустая комната">
-                    <img id="after-image" class="absolute top-0 left-0 w-1/2 h-full object-cover after-image" src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&auto=format&fit=crop" style="width: 50%;" alt="обставленная комната">
+                    <img id="before-image" class="absolute top-0 left-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&auto=format&fit=crop" crossorigin="anonymous" alt="пустая комната">
+                    <img id="after-image" class="absolute top-0 left-0 w-1/2 h-full object-cover after-image" src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&auto=format&fit=crop" crossorigin="anonymous" style="width: 50%;" alt="обставленная комната">
                     <div id="slider" class="absolute top-0 left-1/2 w-1 sm:w-1.5 h-full bg-[#ffe600] shadow-[0_0_15px_#00f7f6] slider-line" style="left: 50%;"></div>
                     <span class="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 bg-black/80 text-[#ffe600] px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-bold border border-[#ffe600]">ДО</span>
                     <span class="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 bg-black/80 text-[#00f7f6] px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-bold border border-[#00f7f6]">ПОСЛЕ</span>
@@ -444,7 +447,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 <div class="print-card bg-[#0f1219] p-0 border-2 border-[#ffe600] shadow-[10px_10px_0_#ff3b7f]">
                     <div class="h-56 overflow-hidden border-b-2 border-[#ffe600]">
-                        <img src="https://images.unsplash.com/photo-1600210492493-0946911123ea?w=800&auto=format&fit=crop" class="w-full h-full object-cover">
+                        <img src="https://images.unsplash.com/photo-1600210492493-0946911123ea?w=800&auto=format&fit=crop" crossorigin="anonymous" class="w-full h-full object-cover">
                     </div>
                     <div class="p-5">
                         <div class="flex justify-between items-center">
@@ -455,7 +458,7 @@
                 </div>
                 <div class="print-card bg-[#0f1219] p-0 border-2 border-[#00f7f6] shadow-[10px_10px_0_#ffe600]">
                     <div class="h-56 overflow-hidden border-b-2 border-[#00f7f6]">
-                        <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&auto=format&fit=crop" class="w-full h-full object-cover">
+                        <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&auto=format&fit=crop" crossorigin="anonymous" class="w-full h-full object-cover">
                     </div>
                     <div class="p-5">
                         <h3 class="font-bold text-[#ffe600]">СПАЛЬНЯ</h3>
@@ -464,7 +467,7 @@
                 </div>
                 <div class="print-card bg-[#0f1219] p-0 border-2 border-[#ff3b7f] shadow-[10px_10px_0_#00f7f6]">
                     <div class="h-56 overflow-hidden border-b-2 border-[#ff3b7f]">
-                        <img src="https://images.unsplash.com/photo-1556912172-45b7abe8b7e1?w=800&auto=format&fit=crop" class="w-full h-full object-cover">
+                        <img src="https://images.unsplash.com/photo-1556912172-45b7abe8b7e1?w=800&auto=format&fit=crop" crossorigin="anonymous" class="w-full h-full object-cover">
                     </div>
                     <div class="p-5">
                         <h3 class="font-bold text-white">КУХНЯ</h3>
@@ -534,8 +537,8 @@
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-3 sm:gap-4 mt-6 lg:mt-0">
-                <img class="border-2 border-[#ff3b7f] shadow-[4px_4px_0_#00f7f6] sm:shadow-[8px_8px_0_#00f7f6] w-full h-auto object-cover" src="https://images.unsplash.com/photo-1630699372507-7da49d7c4fa1?w=600" alt="Интерьер 1">
-                <img class="border-2 border-[#00f7f6] shadow-[4px_4px_0_#ffe600] sm:shadow-[8px_8px_0_#ffe600] w-full h-auto object-cover" src="https://images.unsplash.com/photo-1618219904412-8dc3ecdb4ce3?w=600" alt="Интерьер 2">
+                <img class="border-2 border-[#ff3b7f] shadow-[4px_4px_0_#00f7f6] sm:shadow-[8px_8px_0_#00f7f6] w-full h-auto object-cover" src="https://images.unsplash.com/photo-1630699372507-7da49d7c4fa1?w=600&auto=format&fit=crop" crossorigin="anonymous" alt="Интерьер 1">
+                <img class="border-2 border-[#00f7f6] shadow-[4px_4px_0_#ffe600] sm:shadow-[8px_8px_0_#ffe600] w-full h-auto object-cover" src="https://images.unsplash.com/photo-1618219904412-8dc3ecdb4ce3?w=600&auto=format&fit=crop" crossorigin="anonymous" alt="Интерьер 2">
                 <img class="border-2 border-[#ffe600] shadow-[4px_4px_0_#ff3b7f] sm:shadow-[8px_8px_0_#ff3b7f] w-full h-auto object-cover" src="https://images.unsplash.com/photo-1556909212-d5b604d0c90d?w=600" alt="Интерьер 3">
                 <img class="border-2 border-[#ff3b7f] shadow-[4px_4px_0_#00f7f6] sm:shadow-[8px_8px_0_#00f7f6] w-full h-auto object-cover" src="https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=600" alt="Интерьер 4">
             </div>
