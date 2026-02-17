@@ -44,8 +44,11 @@ RUN bundle install && \
 # Copy application code
 COPY . .
 
+# Make sure bin files are executable
+RUN chmod +x bin/*
+
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+RUN SECRET_KEY_BASE_DUMMY=1 bundle exec rails assets:precompile
 
 
 
