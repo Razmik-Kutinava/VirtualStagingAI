@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>RailsAdmin - VirtualStagingAI</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    
+    <!-- Кастомные стили для RailsAdmin -->
+    <%= stylesheet_link_tag "rails_admin_custom", "data-turbo-track": "reload" %>
+    
+    <!-- Подключаем шрифт Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- ApexCharts для графиков -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    
+    <%= yield :head %>
+    
+    <!-- JavaScript для inline editing -->
+    <script src="<%= asset_path('rails_admin_inline_edit.js') %>"></script>
+    <!-- JavaScript для графиков -->
+    <script src="<%= asset_path('rails_admin_charts.js') %>"></script>
+  </head>
+  <body class="rails_admin">
+    <!-- Кастомная панель навигации для админки -->
+    <div class="admin-top-bar">
+      <div class="admin-top-bar-left">
+        <span class="admin-top-bar-title">
+          <span class="hidden sm:inline">⚡ VirtualStagingAI Admin</span>
+          <span class="sm:hidden">⚡ Admin</span>
+        </span>
+        <span class="admin-top-bar-separator hidden md:inline">|</span>
+        <span class="admin-top-bar-email hidden md:inline">
+          <% if defined?(current_user) && current_user %>
+            <%= current_user.email %>
+          <% else %>
+            Администратор
+          <% end %>
+        </span>
+      </div>
+      <div class="admin-top-bar-right">
+        <%= link_to main_app.root_path, class: "admin-nav-link" do %>
+          <span class="hidden sm:inline">🏠 Лендинг</span>
+          <span class="sm:hidden">🏠</span>
+        <% end %>
+        <%= link_to main_app.dashboard_path, class: "admin-nav-link" do %>
+          <span class="hidden sm:inline">📊 Дашборд</span>
+          <span class="sm:hidden">📊</span>
+        <% end %>
+        <span class="admin-top-bar-separator hidden sm:inline">|</span>
+        <%= link_to main_app.destroy_user_session_path, data: { turbo_method: :delete }, class: "admin-nav-link admin-nav-link-logout" do %>
+          <span class="hidden sm:inline">🚪 Выход</span>
+          <span class="sm:hidden">🚪</span>
+        <% end %>
+      </div>
+    </div>
+    
+    <!-- Хлебные крошки -->
+    <% if content_for?(:breadcrumb) %>
+      <div class="breadcrumb-wrapper" style="padding: 12px 24px; background: var(--panel-deep); border-bottom: 1px solid var(--border-sharp);">
+        <%= yield :breadcrumb %>
+      </div>
+    <% end %>
+    
+    <%= yield %>
+    
+    <!-- Модальное окно предпросмотра изображений -->
+    <%= render partial: 'rails_admin/images/preview_modal' %>
+  </body>
+</html>

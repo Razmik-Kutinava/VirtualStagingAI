@@ -1,0 +1,464 @@
+<% @token_packages = TokenPackage.active.ordered_by_price %>
+
+<!-- Модальное окно пополнения баланса -->
+<div id="replenish-modal" class="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto hidden" style="background: rgba(3, 5, 10, 0.95); backdrop-filter: blur(8px);" onclick="if(event.target === this) closeReplenishModal()">
+  <div id="modal-container" class="print-card w-full max-w-[95vw] sm:max-w-6xl mx-2 sm:mx-4 my-4 sm:my-8 relative flex flex-col sm:flex-row transition-all duration-300" style="background: var(--panel-raise); border: 2px solid var(--accent-electric); max-height: 95vh; overflow: hidden;" onclick="event.stopPropagation()">
+    
+    <!-- Левая часть - основной контент -->
+    <div id="main-content" class="flex-shrink-0 transition-all duration-300" style="width: 100%;">
+      <!-- Заголовок -->
+      <div class="flex items-center justify-between p-4 sm:p-6 border-b" style="border-color: var(--border-sharp);">
+        <h2 class="text-xl sm:text-2xl font-semibold uppercase" style="color: var(--text-primary);">
+          <span style="color: var(--accent-electric);">ПОПОЛНИТЬ</span> <span style="color: var(--text-primary);">БАЛАНС</span>
+        </h2>
+        <button onclick="closeReplenishModal()" class="w-8 h-8 flex items-center justify-center transition-all hover:opacity-70 min-w-[44px] min-h-[44px]" style="color: var(--text-secondary);">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto" style="max-height: calc(95vh - 80px);">
+        <!-- Блок с балансом и статистикой -->
+        <div class="grid grid-cols-2 gap-3 sm:gap-4">
+          <div class="print-card p-4" style="background: var(--panel-deep);">
+            <div class="text-xs uppercase tracking-wider mb-2" style="color: var(--text-muted); letter-spacing: 1px;">КРЕДИТОВ</div>
+            <div class="text-3xl font-semibold neon-electric" id="credits-count"><%= @token_balance %></div>
+          </div>
+          <div class="print-card p-4" style="background: var(--panel-deep);">
+            <div class="text-xs uppercase tracking-wider mb-2" style="color: var(--text-muted); letter-spacing: 1px;">ОБРАБОТАНО</div>
+            <div class="text-3xl font-semibold" style="color: var(--accent-blue);" id="processed-count"><%= @total_photos %></div>
+          </div>
+        </div>
+
+        <!-- Заголовок тарифов -->
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm uppercase tracking-wider" style="color: var(--text-muted); letter-spacing: 1px; opacity: 0.7;">ВЫБЕРИТЕ ТАРИФ</h3>
+          <span class="text-xs" style="color: var(--text-muted); opacity: 0.6;">▼ нажмите на тариф для ввода данных</span>
+        </div>
+
+        <!-- Сетка тарифов -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="packages-grid">
+          <% 
+            package_features = {
+              'СТАРТОВЫЙ' => '• 20 генераций • 1 проект',
+              'БАЗОВЫЙ' => '• 60 генераций • 5 проектов • Multi-view',
+              'ПРОФИ' => '• 150 генераций • 15 проектов • Приоритет',
+              'АГЕНТСКИЙ' => '• 500 генераций • Безлимит • White-label'
+            }
+          %>
+          <% @token_packages.each_with_index do |package, index| %>
+            <% 
+              accent_colors = [
+                'var(--accent-electric)',  # СТАРТОВЫЙ - неон-циан
+                'var(--accent-blue)',       # БАЗОВЫЙ - синий
+                'var(--accent-electric)',   # ПРОФИ - неон-циан
+                'var(--accent-blue)'        # АГЕНТСКИЙ - синий
+              ]
+              accent_color = accent_colors[index % accent_colors.length]
+              is_popular = package.name == 'БАЗОВЫЙ'
+              features = package_features[package.name] || ''
+            %>
+            <button 
+              type="button"
+              onclick="togglePackage(<%= package.id %>, '<%= j(package.name) %>', <%= package.price_dollars %>, '<%= accent_color %>', <%= package.tokens_amount %>)"
+              class="package-card print-card p-4 text-left transition-all relative"
+              style="background: var(--panel-deep); border: 2px solid var(--border-sharp); cursor: pointer;"
+              data-package-id="<%= package.id %>"
+              data-package-name="<%= package.name %>"
+              data-accent="<%= accent_color %>">
+              
+              <% if is_popular %>
+                <div class="absolute top-0 right-0 px-3 py-1 text-xs font-semibold uppercase" style="background: var(--accent-blue); color: var(--ink); transform: translate(8px, -8px);">
+                  ХИТ
+                </div>
+              <% end %>
+              
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-base font-semibold uppercase" style="color: var(--text-primary);">
+                  <%= package.name %>
+                </h4>
+                <span class="package-indicator text-lg transition-transform" style="color: var(--accent-electric);">▼</span>
+              </div>
+              <div class="text-2xl font-bold mb-1" style="color: <%= accent_color %>;">$<%= package.price_dollars.to_i %></div>
+              <div class="text-sm mb-2" style="color: var(--text-secondary);"><%= package.tokens_amount %> токенов</div>
+              <div class="text-xs" style="color: var(--text-muted);"><%= features %></div>
+            </button>
+          <% end %>
+        </div>
+
+        <!-- Дополнительная информация -->
+        <div class="flex items-start gap-3 pt-4 border-t" style="border-color: var(--border-sharp);">
+          <span class="text-lg">ℹ️</span>
+          <div class="flex-1">
+            <p class="text-sm mb-1" style="color: var(--text-secondary);">Токены не сгорают. Можно использовать в любое время.</p>
+            <p class="text-xs" style="color: var(--text-muted);">• 1 токен = 1 генерация одного стиля</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Правая часть - панель оплаты (выезжает справа) -->
+    <div id="payment-panel" class="payment-panel flex-shrink-0 overflow-hidden transition-all duration-300" style="width: 0; border-left: 0 solid var(--border-sharp);">
+      <div class="panel-content w-full p-6 space-y-4 overflow-y-auto" style="max-height: calc(90vh - 80px); min-width: 400px;">
+        <!-- Заголовок панели -->
+        <div class="flex items-center justify-between mb-4 pb-4 border-b" style="border-color: var(--border-sharp);">
+          <h3 class="text-lg font-semibold uppercase" style="color: var(--text-primary);">ОПЛАТА</h3>
+          <button onclick="closePanel()" class="w-6 h-6 flex items-center justify-center transition-all hover:opacity-70" style="color: var(--text-secondary);">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Информация о выбранном тарифе -->
+        <div class="print-card p-4" style="background: var(--panel-deep);">
+          <div class="text-xs uppercase tracking-wider mb-2" style="color: var(--text-muted); letter-spacing: 1px;">ВЫБРАНО</div>
+          <div id="selected-package-name" class="text-xl font-semibold uppercase mb-3" style="color: var(--text-primary);">-</div>
+          <div class="flex items-baseline gap-2">
+            <div id="selected-package-price" class="text-3xl font-bold" style="color: var(--accent-electric);">-</div>
+            <div id="selected-package-tokens" class="text-sm" style="color: var(--text-secondary);">-</div>
+          </div>
+        </div>
+
+        <!-- Промо-код -->
+        <div>
+          <h3 class="text-sm uppercase tracking-wider mb-3" style="color: var(--text-muted); letter-spacing: 1px; opacity: 0.7;">ПРОМО-КОД</h3>
+          <div class="flex gap-3">
+            <input 
+              type="text" 
+              id="promo-code" 
+              placeholder="ВВЕДИТЕ КОД" 
+              class="flex-1 px-4 py-3 text-sm uppercase tracking-wider"
+              style="background: var(--panel-deep); border: 2px solid var(--accent-electric); color: var(--text-primary); letter-spacing: 1px; border-radius: 0;"
+              onfocus="this.style.borderColor='var(--accent-electric)'; this.style.boxShadow='0 0 10px var(--glow-electric)';"
+              onblur="this.style.borderColor='var(--accent-electric)'; this.style.boxShadow='none';">
+            <button 
+              type="button"
+              onclick="applyPromoCode()"
+              class="px-6 py-3 text-sm font-semibold uppercase tracking-wider transition-all"
+              style="background: var(--accent-blue); color: var(--text-primary); border: none; border-radius: 0; letter-spacing: 1px;"
+              onmouseover="this.style.background='var(--accent-electric)';"
+              onmouseout="this.style.background='var(--accent-blue)';">
+              ПРИМЕНИТЬ
+            </button>
+          </div>
+        </div>
+
+        <!-- Данные карты -->
+        <div>
+          <h3 class="text-sm uppercase tracking-wider mb-3" style="color: var(--text-muted); letter-spacing: 1px; opacity: 0.7;">ДАННЫЕ КАРТЫ</h3>
+          <div class="space-y-3">
+            <input 
+              type="text" 
+              id="card-number" 
+              placeholder="0000 0000 0000 0000" 
+              maxlength="19"
+              class="w-full px-4 py-3 text-sm uppercase tracking-wider"
+              style="background: var(--panel-deep); border: 2px solid var(--accent-electric); color: var(--text-primary); letter-spacing: 1px; border-radius: 0;"
+              onfocus="this.style.borderColor='var(--accent-electric)'; this.style.boxShadow='0 0 10px var(--glow-electric)';"
+              onblur="this.style.borderColor='var(--accent-electric)'; this.style.boxShadow='none';"
+              oninput="formatCardNumber(this)">
+            
+            <div class="grid grid-cols-2 gap-3">
+              <input 
+                type="text" 
+                id="card-expiry" 
+                placeholder="ММ/ГГ" 
+                maxlength="5"
+                class="px-4 py-3 text-sm uppercase tracking-wider"
+                style="background: var(--panel-deep); border: 2px solid var(--accent-electric); color: var(--text-primary); letter-spacing: 1px; border-radius: 0;"
+                onfocus="this.style.borderColor='var(--accent-electric)'; this.style.boxShadow='0 0 10px var(--glow-electric)';"
+                onblur="this.style.borderColor='var(--accent-electric)'; this.style.boxShadow='none';"
+                oninput="formatExpiry(this)">
+              <input 
+                type="text" 
+                id="card-cvc" 
+                placeholder="CVC" 
+                maxlength="4"
+                class="px-4 py-3 text-sm uppercase tracking-wider"
+                style="background: var(--panel-deep); border: 2px solid var(--accent-electric); color: var(--text-primary); letter-spacing: 1px; border-radius: 0;"
+                onfocus="this.style.borderColor='var(--accent-electric)'; this.style.boxShadow='0 0 10px var(--glow-electric)';"
+                onblur="this.style.borderColor='var(--accent-electric)'; this.style.boxShadow='none';">
+            </div>
+            
+            <input 
+              type="text" 
+              id="card-name" 
+              placeholder="ИМЯ ВЛАДЕЛЬЦА" 
+              class="w-full px-4 py-3 text-sm uppercase tracking-wider"
+              style="background: var(--panel-deep); border: 2px solid var(--accent-electric); color: var(--text-primary); letter-spacing: 1px; border-radius: 0;"
+              onfocus="this.style.borderColor='var(--accent-electric)'; this.style.boxShadow='0 0 10px var(--glow-electric)';"
+              onblur="this.style.borderColor='var(--accent-electric)'; this.style.boxShadow='none';">
+          </div>
+        </div>
+
+        <!-- Кнопка оплаты -->
+        <button 
+          type="button"
+          onclick="processPayment()"
+          id="pay-button"
+          class="w-full py-4 text-base font-semibold uppercase tracking-wider transition-all"
+          style="background: var(--accent-blue); color: var(--text-primary); border: none; border-radius: 0; letter-spacing: 1px; box-shadow: 0 6px 0 #001a4f;"
+          onmouseover="this.style.transform='translateY(2px)'; this.style.boxShadow='0 4px 0 #001a4f';"
+          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 0 #001a4f';"
+          onmousedown="this.style.transform='translateY(4px)'; this.style.boxShadow='0 2px 0 #001a4f';"
+          onmouseup="this.style.transform='translateY(2px)'; this.style.boxShadow='0 4px 0 #001a4f';">
+          ОПЛАТИТЬ <span id="pay-button-price">-</span>
+        </button>
+        
+        <p class="text-xs text-center" style="color: var(--text-muted);">
+          🔒 ЗАЩИЩЕНО SSL • ТОКЕНЫ МГНОВЕННО
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentPackageId = null;
+  let isPanelOpen = false;
+
+  function openReplenishModal() {
+    const modal = document.getElementById('replenish-modal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      resetSelection();
+    }
+  }
+
+  function closeReplenishModal() {
+    const modal = document.getElementById('replenish-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+      resetSelection();
+    }
+  }
+
+  function resetSelection() {
+    // Убрать выделение со всех карточек
+    document.querySelectorAll('.package-card').forEach(card => {
+      card.style.borderColor = 'var(--border-sharp)';
+      card.style.boxShadow = 'none';
+      const h4 = card.querySelector('h4');
+      if (h4) h4.style.color = 'var(--text-primary)';
+      const indicator = card.querySelector('.package-indicator');
+      if (indicator) {
+        indicator.style.transform = 'rotate(0deg)';
+        indicator.style.color = 'var(--accent-electric)';
+      }
+    });
+    
+    // Закрыть панель
+    closePanel();
+    
+    // Сбросить состояние
+    currentPackageId = null;
+    isPanelOpen = false;
+  }
+
+  function openPanel(packageId, packageName, price, accentColor, tokens) {
+    // Обновить информацию о выбранном тарифе
+    document.getElementById('selected-package-name').textContent = packageName;
+    document.getElementById('selected-package-price').textContent = '$' + Math.round(price);
+    document.getElementById('selected-package-tokens').textContent = tokens + ' токенов';
+    document.getElementById('pay-button-price').textContent = '$' + Math.round(price);
+    
+    // Обновить цвет цены
+    const priceEl = document.getElementById('selected-package-price');
+    if (priceEl) {
+      priceEl.style.color = accentColor;
+    }
+    
+    // Открыть панель - выезжает справа
+    const panel = document.getElementById('payment-panel');
+    const mainContent = document.getElementById('main-content');
+    const container = document.getElementById('modal-container');
+    
+    if (panel && mainContent && container) {
+      // Панель выезжает справа
+      panel.style.width = '450px';
+      panel.style.borderLeftWidth = '1px';
+      
+      // Основной контент смещается влево
+      mainContent.style.width = 'calc(100% - 450px)';
+      
+      // Контейнер расширяется
+      container.style.maxWidth = '1000px';
+    }
+    
+    isPanelOpen = true;
+  }
+
+  function closePanel() {
+    const panel = document.getElementById('payment-panel');
+    const mainContent = document.getElementById('main-content');
+    const container = document.getElementById('modal-container');
+    
+    if (panel && mainContent && container) {
+      // Панель скрывается
+      panel.style.width = '0';
+      panel.style.borderLeftWidth = '0';
+      
+      // Основной контент возвращается на всю ширину
+      mainContent.style.width = '100%';
+      
+      // Контейнер возвращается к исходному размеру
+      container.style.maxWidth = '768px';
+    }
+    
+    isPanelOpen = false;
+  }
+
+  function togglePackage(packageId, packageName, price, accentColor, tokens) {
+    // 1. Убрать выделение со всех карточек
+    document.querySelectorAll('.package-card').forEach(card => {
+      const cardId = parseInt(card.dataset.packageId);
+      
+      if (cardId === packageId) {
+        // Выделить выбранную карточку
+        if (currentPackageId === packageId && isPanelOpen) {
+          // Если нажали на тот же тариф и панель открыта - закрыть
+          card.style.borderColor = 'var(--border-sharp)';
+          card.style.boxShadow = 'none';
+          const h4 = card.querySelector('h4');
+          if (h4) h4.style.color = 'var(--text-primary)';
+          const indicator = card.querySelector('.package-indicator');
+          if (indicator) {
+            indicator.style.transform = 'rotate(0deg)';
+            indicator.style.color = 'var(--accent-electric)';
+          }
+          closePanel();
+          currentPackageId = null;
+        } else {
+          // Выделить карточку
+          card.style.borderColor = accentColor;
+          const glowColor = accentColor.includes('electric') 
+            ? 'rgba(0, 224, 255, 0.3)' 
+            : 'rgba(47, 108, 255, 0.3)';
+          card.style.boxShadow = `0 0 20px ${glowColor}`;
+          const h4 = card.querySelector('h4');
+          if (h4) h4.style.color = accentColor;
+          const indicator = card.querySelector('.package-indicator');
+          if (indicator) {
+            indicator.style.transform = 'rotate(180deg)';
+            indicator.style.color = accentColor;
+          }
+          // Открыть панель с новыми данными
+          openPanel(packageId, packageName, price, accentColor, tokens);
+          currentPackageId = packageId;
+        }
+      } else {
+        // Убрать выделение с других карточек
+        card.style.borderColor = 'var(--border-sharp)';
+        card.style.boxShadow = 'none';
+        const h4 = card.querySelector('h4');
+        if (h4) h4.style.color = 'var(--text-primary)';
+        const indicator = card.querySelector('.package-indicator');
+        if (indicator) {
+          indicator.style.transform = 'rotate(0deg)';
+          indicator.style.color = 'var(--accent-electric)';
+        }
+      }
+    });
+  }
+
+  function applyPromoCode() {
+    const code = document.getElementById('promo-code').value.trim().toUpperCase();
+    if (code) {
+      // Здесь будет логика применения промо-кода
+      alert('Промо-код "' + code + '" будет применен после подключения к бэкенду');
+    }
+  }
+
+  function formatCardNumber(input) {
+    let value = input.value.replace(/\s/g, '');
+    let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+    input.value = formatted;
+  }
+
+  function formatExpiry(input) {
+    let value = input.value.replace(/\D/g, '');
+    if (value.length >= 2) {
+      value = value.substring(0, 2) + '/' + value.substring(2, 4);
+    }
+    input.value = value;
+  }
+
+  function processPayment() {
+    const cardNumber = document.getElementById('card-number').value.replace(/\s/g, '');
+    const cardExpiry = document.getElementById('card-expiry').value;
+    const cardCvc = document.getElementById('card-cvc').value;
+    const cardName = document.getElementById('card-name').value;
+
+    if (!cardNumber || !cardExpiry || !cardCvc || !cardName) {
+      alert('Пожалуйста, заполните все поля карты');
+      return;
+    }
+
+    if (!currentPackageId) {
+      alert('Пожалуйста, выберите тариф');
+      return;
+    }
+
+    // Здесь будет отправка данных на сервер
+    alert('Оплата будет обработана после подключения к платежной системе. Пакет: ' + currentPackageId);
+  }
+
+  // Закрытие по Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      if (isPanelOpen) {
+        closePanel();
+        resetSelection();
+      } else {
+        closeReplenishModal();
+      }
+    }
+  });
+
+  // Делаем функции глобальными
+  window.openReplenishModal = openReplenishModal;
+  window.closeReplenishModal = closeReplenishModal;
+  window.togglePackage = togglePackage;
+  window.applyPromoCode = applyPromoCode;
+  window.processPayment = processPayment;
+  window.closePanel = closePanel;
+</script>
+
+<style>
+  .package-indicator {
+    transition: transform 0.3s ease, color 0.3s ease;
+  }
+  
+  #modal-container {
+    transition: max-width 0.3s ease;
+  }
+  
+  #main-content {
+    transition: width 0.3s ease;
+  }
+  
+  .payment-panel {
+    transition: width 0.3s ease, border-left-width 0.3s ease;
+  }
+  
+  @media (max-width: 768px) {
+    #modal-container {
+      flex-direction: column;
+    }
+    
+    #main-content {
+      width: 100% !important;
+    }
+    
+    .payment-panel {
+      width: 100% !important;
+      border-left: none !important;
+      border-top: 1px solid var(--border-sharp) !important;
+      max-height: 50vh;
+    }
+  }
+</style>

@@ -130,5 +130,8 @@ class DashboardController < ApplicationController
     
     # Баланс токенов
     @token_balance = current_user.token_balance
+    
+    # Проверка, есть ли у пользователя успешные платежи
+    @has_paid = current_user.payments.where(status: 'succeeded').exists?
   end
 end

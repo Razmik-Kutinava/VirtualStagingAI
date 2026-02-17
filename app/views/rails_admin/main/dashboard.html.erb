@@ -1,0 +1,420 @@
+<% 
+  # Собираем статистику для правой панели
+  stats = {
+    total_users: User.count,
+    total_projects: Project.count,
+    total_images: Image.count,
+    total_folders: Folder.count,
+    total_generations: Generation.count,
+    total_styles: Style.count,
+    total_payments: Payment.count,
+    total_token_packages: TokenPackage.count,
+    total_token_purchases: TokenPurchase.count,
+    active_users: User.where('confirmed_at IS NOT NULL').count,
+    recent_users: User.where('created_at > ?', 7.days.ago).count,
+    recent_projects: Project.where('created_at > ?', 7.days.ago).count,
+    recent_images: Image.where('created_at > ?', 7.days.ago).count,
+    total_tokens_spent: TokenTransaction.sum(:amount) || 0,
+    total_revenue_cents: Payment.where(status: 'succeeded').sum(:amount_cents) || 0
+  }
+  
+  # Последние действия
+  recent_audit_logs = AuditLog.order(created_at: :desc).limit(5)
+%>
+
+<div class="dashboard-container" style="display: flex; gap: 24px; padding: 20px; flex-wrap: wrap;">
+  <!-- Левая колонка - таблица моделей -->
+  <div class="dashboard-models" style="flex: 0 0 60%; max-width: 60%; min-width: 0;">
+    <% if @abstract_models %>
+      <div class="table-wrapper">
+      <table class="table table-condensed table-striped table-hover">
+        <thead>
+          <tr>
+            <th class="shrink model-name">
+              <%= t "admin.table_headers.model_name" %>
+            </th>
+            <th class="shrink last-created">
+              <%= t "admin.table_headers.last_created" %>
+            </th>
+            <th class="records">
+              <%= t "admin.table_headers.records" %>
+            </th>
+            <th class="shrink controls"></th>
+          </tr>
+        </thead>
+        <tbody class="table-group-divider">
+          <% @abstract_models.each do |abstract_model| %>
+            <% if authorized? :index, abstract_model %>
+              <% index_path = index_path(model_name: abstract_model.to_param) %>
+              <% row_class = "#{cycle("odd", "even")}#{" link" if index_path} #{abstract_model.param_key}_links" %>
+              <tr class="<%= row_class %>" data-link="<%= index_path %>">
+                <% last_created = @most_recent_created[abstract_model.model.name] %>
+                <% active = last_created.try(:today?) %>
+                <td>
+                  <span class="show">
+                    <%= link_to abstract_model.config.label_plural, index_path %>
+                  </span>
+                </td>
+                <td>
+                  <% if last_created %>
+                    <%= t "admin.misc.time_ago", time: time_ago_in_words(last_created), default: "#{time_ago_in_words(last_created)} #{t("admin.misc.ago")}" %>
+                  <% end %>
+                </td>
+                <td>
+                  <% count = @count[abstract_model.model.name] %>
+                  <% percent = count > 0 ? (@max <= 1 ? count : ((Math.log(count+1) * 100.0) / Math.log(@max+1)).to_i) : -1 %>
+                  <div class="<%= active ? 'active progress-bar-striped ' : '' %>progress" style="margin-bottom:0px">
+                    <div class="bg-<%= get_indicator(percent) %> progress-bar animate-width-to" data-animate-length="<%= ([1.0, percent].max.to_i * 20) %>" data-animate-width-to="<%= [2.0, percent].max.to_i %>%" style="width:2%">
+                      <%= @count[abstract_model.model.name] %>
+                    </div>
+                  </div>
+                </td>
+                <td class="links">
+                  <ul class="nav d-inline list-inline">
+                    <%= menu_for :collection, abstract_model, nil, true %>
+                  </ul>
+                </td>
+              </tr>
+            <% end %>
+          <% end %>
+        </tbody>
+      </table>
+      </div>
+    <% end %>
+    <% if @history && authorized?(:history_index) %>
+      <div class="block" id="block-tables">
+        <div class="content">
+          <h2>
+            <%= t("admin.actions.history_index.menu") %>
+          </h2>
+          <%= render partial: 'rails_admin/main/dashboard_history' %>
+        </div>
+      </div>
+    <% end %>
+    
+    <!-- Секция с графиками -->
+    <div class="charts-section" style="margin-top: 30px;">
+      <h2 style="color: var(--accent-electric, #00e0ff); margin-bottom: 20px; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+        📈 Графики динамики
+      </h2>
+      
+      <!-- Выбор периода -->
+      <div class="period-selector" style="margin-bottom: 20px; display: flex; gap: 10px;">
+        <button class="period-btn active" data-period="day" style="padding: 8px 16px; background: var(--panel-raise, #252540); border: 1px solid var(--border-sharp, #2a2a3e); color: var(--text-secondary, #a0a0a0); border-radius: 4px; cursor: pointer; transition: all 0.3s;">
+          День
+        </button>
+        <button class="period-btn" data-period="week" style="padding: 8px 16px; background: var(--panel-raise, #252540); border: 1px solid var(--border-sharp, #2a2a3e); color: var(--text-secondary, #a0a0a0); border-radius: 4px; cursor: pointer; transition: all 0.3s;">
+          Неделя
+        </button>
+        <button class="period-btn" data-period="month" style="padding: 8px 16px; background: var(--panel-raise, #252540); border: 1px solid var(--border-sharp, #2a2a3e); color: var(--text-secondary, #a0a0a0); border-radius: 4px; cursor: pointer; transition: all 0.3s;">
+          Месяц
+        </button>
+        <button class="period-btn" data-period="year" style="padding: 8px 16px; background: var(--panel-raise, #252540); border: 1px solid var(--border-sharp, #2a2a3e); color: var(--text-secondary, #a0a0a0); border-radius: 4px; cursor: pointer; transition: all 0.3s;">
+          Год
+        </button>
+      </div>
+      
+      <!-- Графики в сетке -->
+      <div class="charts-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px;">
+        <!-- График регистраций -->
+        <div class="chart-card" style="background: var(--panel-deep, #1a1a2e); border: 1px solid var(--border-sharp, #2a2a3e); border-radius: 8px; padding: 20px;">
+          <h3 style="color: var(--accent-electric, #00e0ff); margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; font-weight: 600;">
+            Регистрации пользователей
+          </h3>
+          <div id="user-registrations-chart" data-period="week"></div>
+        </div>
+        
+        <!-- График проектов -->
+        <div class="chart-card" style="background: var(--panel-deep, #1a1a2e); border: 1px solid var(--border-sharp, #2a2a3e); border-radius: 8px; padding: 20px;">
+          <h3 style="color: var(--accent-blue, #667eea); margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; font-weight: 600;">
+            Создание проектов
+          </h3>
+          <div id="projects-chart" data-period="week"></div>
+        </div>
+        
+        <!-- График доходов -->
+        <div class="chart-card" style="background: var(--panel-deep, #1a1a2e); border: 1px solid var(--border-sharp, #2a2a3e); border-radius: 8px; padding: 20px;">
+          <h3 style="color: #28a745; margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; font-weight: 600;">
+            Доходы
+          </h3>
+          <div id="revenue-chart" data-period="week"></div>
+        </div>
+        
+        <!-- График активности -->
+        <div class="chart-card" style="background: var(--panel-deep, #1a1a2e); border: 1px solid var(--border-sharp, #2a2a3e); border-radius: 8px; padding: 20px;">
+          <h3 style="color: #ffc107; margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; font-weight: 600;">
+            Общая активность
+          </h3>
+          <div id="activity-chart" data-period="week"></div>
+        </div>
+      </div>
+      
+      <!-- Воронка конверсии -->
+      <div class="chart-card" style="background: var(--panel-deep, #1a1a2e); border: 1px solid var(--border-sharp, #2a2a3e); border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+        <h3 style="color: var(--accent-electric, #00e0ff); margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; font-weight: 600;">
+          Воронка конверсии
+        </h3>
+        <div id="conversion-funnel-chart"></div>
+      </div>
+      
+      <!-- Графики пакетов токенов и стилей -->
+      <div class="charts-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+        <!-- График пакетов токенов -->
+        <div class="chart-card" style="background: var(--panel-deep, #1a1a2e); border: 1px solid var(--border-sharp, #2a2a3e); border-radius: 8px; padding: 20px;">
+          <h3 style="color: var(--accent-blue, #667eea); margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; font-weight: 600;">
+            Популярность пакетов токенов
+          </h3>
+          <div id="token-packages-chart"></div>
+        </div>
+        
+        <!-- График использования стилей -->
+        <div class="chart-card" style="background: var(--panel-deep, #1a1a2e); border: 1px solid var(--border-sharp, #2a2a3e); border-radius: 8px; padding: 20px;">
+          <h3 style="color: var(--accent-electric, #00e0ff); margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; font-weight: 600;">
+            Популярность стилей
+          </h3>
+          <div id="styles-chart"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Правая колонка - статистика -->
+  <div class="dashboard-stats" style="flex: 0 0 38%; max-width: 38%;">
+    <div class="stats-panel" style="background: var(--panel-deep, #1a1a2e); border: 1px solid var(--border-sharp, #2a2a3e); border-radius: 8px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+      <h2 style="color: var(--accent-electric, #00e0ff); margin-top: 0; margin-bottom: 20px; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+        📊 Статистика системы
+      </h2>
+
+      <!-- Основные метрики -->
+      <div class="stats-section" style="margin-bottom: 24px;">
+        <h3 style="color: var(--accent-blue, #667eea); font-size: 1.1rem; margin-bottom: 12px; font-weight: 600;">
+          Основные показатели
+        </h3>
+        <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid var(--accent-electric, #00e0ff);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary, #a0a0a0);">Всего пользователей:</span>
+            <strong style="color: var(--accent-electric, #00e0ff); font-size: 1.2rem;"><%= stats[:total_users] %></strong>
+          </div>
+        </div>
+        <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid var(--accent-blue, #667eea);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary, #a0a0a0);">Активных пользователей:</span>
+            <strong style="color: var(--accent-blue, #667eea); font-size: 1.2rem;"><%= stats[:active_users] %></strong>
+          </div>
+        </div>
+        <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #28a745;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary, #a0a0a0);">Всего проектов:</span>
+            <strong style="color: #28a745; font-size: 1.2rem;"><%= stats[:total_projects] %></strong>
+          </div>
+        </div>
+        <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #ffc107;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary, #a0a0a0);">Всего изображений:</span>
+            <strong style="color: #ffc107; font-size: 1.2rem;"><%= stats[:total_images] %></strong>
+          </div>
+        </div>
+        <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #17a2b8;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary, #a0a0a0);">Всего папок:</span>
+            <strong style="color: #17a2b8; font-size: 1.2rem;"><%= stats[:total_folders] %></strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Активность за неделю -->
+      <div class="stats-section" style="margin-bottom: 24px;">
+        <h3 style="color: var(--accent-blue, #667eea); font-size: 1.1rem; margin-bottom: 12px; font-weight: 600;">
+          Активность за 7 дней
+        </h3>
+        <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary, #a0a0a0);">Новых пользователей:</span>
+            <strong style="color: var(--accent-electric, #00e0ff);"><%= stats[:recent_users] %></strong>
+          </div>
+        </div>
+        <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary, #a0a0a0);">Новых проектов:</span>
+            <strong style="color: var(--accent-electric, #00e0ff);"><%= stats[:recent_projects] %></strong>
+          </div>
+        </div>
+        <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary, #a0a0a0);">Новых изображений:</span>
+            <strong style="color: var(--accent-electric, #00e0ff);"><%= stats[:recent_images] %></strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Финансовые показатели -->
+      <div class="stats-section" style="margin-bottom: 24px;">
+        <h3 style="color: var(--accent-blue, #667eea); font-size: 1.1rem; margin-bottom: 12px; font-weight: 600;">
+          Финансы и токены
+        </h3>
+        <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #28a745;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary, #a0a0a0);">Общий доход:</span>
+            <strong style="color: #28a745; font-size: 1.2rem;"><%= number_with_delimiter((stats[:total_revenue_cents] / 100.0).round(2), delimiter: ' ') %> ₽</strong>
+          </div>
+        </div>
+        <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #ffc107;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary, #a0a0a0);">Потрачено токенов:</span>
+            <strong style="color: #ffc107; font-size: 1.2rem;"><%= number_with_delimiter(stats[:total_tokens_spent].abs, delimiter: ' ') %></strong>
+          </div>
+        </div>
+        <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary, #a0a0a0);">Пакетов токенов:</span>
+            <strong style="color: var(--accent-electric, #00e0ff);"><%= stats[:total_token_packages] %></strong>
+          </div>
+        </div>
+        <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary, #a0a0a0);">Покупок токенов:</span>
+            <strong style="color: var(--accent-electric, #00e0ff);"><%= stats[:total_token_purchases] %></strong>
+          </div>
+        </div>
+        <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary, #a0a0a0);">Генераций:</span>
+            <strong style="color: var(--accent-electric, #00e0ff);"><%= stats[:total_generations] %></strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Дополнительная статистика -->
+      <div class="stats-section">
+        <h3 style="color: var(--accent-blue, #667eea); font-size: 1.1rem; margin-bottom: 12px; font-weight: 600;">
+          Дополнительно
+        </h3>
+        <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary, #a0a0a0);">Стилей:</span>
+            <strong style="color: var(--accent-electric, #00e0ff);"><%= stats[:total_styles] %></strong>
+          </div>
+        </div>
+        <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary, #a0a0a0);">Платежей:</span>
+            <strong style="color: var(--accent-electric, #00e0ff);"><%= stats[:total_payments] %></strong>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Виджет топ пользователей -->
+      <div class="top-users-widget" style="margin-top: 24px;">
+        <h3 style="color: var(--accent-blue, #667eea); font-size: 1.1rem; margin-bottom: 12px; font-weight: 600;">
+          Топ-10 активных пользователей
+        </h3>
+        <div id="top-users-list" style="max-height: 400px; overflow-y: auto;">
+          <!-- Загружается через AJAX -->
+        </div>
+      </div>
+      
+      <!-- Виджеты дашборда -->
+      <%= render partial: 'rails_admin/dashboard/widgets' %>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Обработка выбора периода
+  document.addEventListener('DOMContentLoaded', function() {
+    const periodButtons = document.querySelectorAll('.period-btn');
+    periodButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Убираем active класс со всех кнопок
+        periodButtons.forEach(b => b.classList.remove('active'));
+        // Добавляем active класс к нажатой кнопке
+        this.classList.add('active');
+        
+        const period = this.dataset.period;
+        
+        // Обновляем data-period у всех графиков
+        document.querySelectorAll('[id$="-chart"]').forEach(chart => {
+          chart.dataset.period = period;
+        });
+        
+        // Перезагружаем графики
+        if (window.railsAdminCharts) {
+          // Уничтожаем старые графики
+          Object.keys(window.railsAdminCharts.charts).forEach(key => {
+            if (window.railsAdminCharts.charts[key] && window.railsAdminCharts.charts[key].destroy) {
+              window.railsAdminCharts.charts[key].destroy();
+            }
+          });
+          window.railsAdminCharts.charts = {};
+          
+          // Инициализируем заново
+          window.railsAdminCharts.init();
+        }
+      });
+    });
+    
+    // Загрузка топ пользователей
+    if (typeof fetch !== 'undefined') {
+      fetch('/rails_admin/statistics/top_users?limit=10', {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+      })
+      .then(response => response.json())
+      .then(data => {
+        const container = document.getElementById('top-users-list');
+        if (container && data.users) {
+          container.innerHTML = data.users.map((user, index) => `
+            <div class="stat-card" style="background: var(--panel-raise, #252540); padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid var(--accent-electric, #00e0ff);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="color: var(--text-primary, #ffffff); font-weight: 600;">${index + 1}. ${user.email}</span>
+                <a href="/admin/user/${user.id}" style="color: var(--accent-electric, #00e0ff); text-decoration: none;">→</a>
+              </div>
+              <div style="display: flex; gap: 12px; font-size: 0.85rem;">
+                <span style="color: var(--text-secondary, #a0a0a0);">Проектов: <strong style="color: var(--accent-blue, #667eea);">${user.projects_count}</strong></span>
+                <span style="color: var(--text-secondary, #a0a0a0);">Генераций: <strong style="color: var(--accent-electric, #00e0ff);">${user.generations_count}</strong></span>
+                <span style="color: var(--text-secondary, #a0a0a0);">Токенов: <strong style="color: #ffc107;">${user.tokens_spent}</strong></span>
+              </div>
+            </div>
+          `).join('');
+        }
+      })
+      .catch(error => {
+        console.error('Error loading top users:', error);
+      });
+    }
+  });
+</script>
+
+<style>
+  /* Адаптивность для мобильных устройств */
+  @media (max-width: 1200px) {
+    .dashboard-container {
+      flex-direction: column !important;
+    }
+    .dashboard-models,
+    .dashboard-stats {
+      flex: 1 1 100% !important;
+      max-width: 100% !important;
+    }
+    .charts-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+  
+  /* Стили для кнопок периода */
+  .period-btn.active {
+    background: var(--accent-electric, #00e0ff) !important;
+    border-color: var(--accent-electric, #00e0ff) !important;
+    color: var(--ink, #03050a) !important;
+    font-weight: 600 !important;
+  }
+  
+  .period-btn:hover {
+    background: var(--panel-raise, #2a2a4a) !important;
+    border-color: var(--accent-electric, #00e0ff) !important;
+  }
+</style>

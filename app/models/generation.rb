@@ -16,4 +16,19 @@ class Generation < ApplicationRecord
   }
 
   validates :tokens_spent, presence: true, numericality: { greater_than: 0 }
+
+  # Логирование создания генерации
+  after_create :log_generation_created
+
+  private
+
+  def log_generation_created
+    AuditLogger.log(user, 'generation_created', {
+      generation_id: id,
+      input_image_id: input_image_id,
+      style_id: style_id,
+      tokens_spent: tokens_spent,
+      status: status
+    })
+  end
 end

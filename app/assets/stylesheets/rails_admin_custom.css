@@ -1,0 +1,1578 @@
+/* Кастомные стили для RailsAdmin в стиле VirtualStagingAI */
+
+/* ========== INLINE EDITING STYLES ========== */
+
+/* Редактируемые ячейки */
+td.inline-editable {
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+td.inline-editable:hover {
+  background-color: rgba(0, 224, 255, 0.1) !important;
+  border: 1px solid var(--accent-electric);
+}
+
+td.inline-editable.editing {
+  padding: 0 !important;
+  background-color: var(--panel-raise) !important;
+}
+
+/* Input элементы в режиме редактирования */
+td.inline-editable .inline-edit-input,
+td.inline-editable select.inline-edit-input {
+  width: 100%;
+  min-width: 120px;
+  padding: 4px 8px;
+  margin: 0;
+  border: 2px solid var(--accent-electric);
+  background-color: var(--panel-deep);
+  color: var(--text-primary);
+  font-size: 14px;
+  border-radius: 4px;
+  outline: none;
+  box-shadow: 0 0 8px var(--glow-electric);
+}
+
+td.inline-editable .inline-edit-input:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 12px var(--glow-blue);
+}
+
+td.inline-editable textarea.inline-edit-input {
+  resize: vertical;
+  min-height: 60px;
+}
+
+td.inline-editable .inline-edit-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--accent-electric);
+}
+
+/* Индикаторы состояния */
+td.inline-editable .inline-edit-loading {
+  color: var(--accent-electric);
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+td.inline-editable.saving {
+  background-color: rgba(0, 224, 255, 0.15) !important;
+}
+
+td.inline-editable.saved {
+  background-color: rgba(0, 255, 100, 0.1) !important;
+  animation: flashGreen 0.5s ease;
+}
+
+td.inline-editable.error {
+  background-color: rgba(255, 59, 127, 0.15) !important;
+}
+
+td.inline-editable .inline-edit-error {
+  color: #ff3b7f;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: help;
+}
+
+@keyframes flashGreen {
+  0% { background-color: rgba(0, 255, 100, 0.3); }
+  100% { background-color: rgba(0, 255, 100, 0.1); }
+}
+
+/* Улучшаем видимость редактируемых ячеек */
+table.table tbody td.inline-editable:not(.editing):not(.saving):not(.error):not(.saved) {
+  position: relative;
+}
+
+table.table tbody td.inline-editable:not(.editing):not(.saving):not(.error):not(.saved)::after {
+  content: '✏️';
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  font-size: 10px;
+  pointer-events: none;
+}
+
+table.table tbody td.inline-editable:not(.editing):not(.saving):not(.error):not(.saved):hover::after {
+  opacity: 0.5;
+}
+
+/* Скрываем иконку редактирования когда ячейка редактируется */
+td.inline-editable.editing::after,
+td.inline-editable.saving::after,
+td.inline-editable.error::after,
+td.inline-editable.saved::after {
+  display: none;
+}
+
+/* ---------- ДИЗАЙН-СИСТЕМА VSAI D3 ---------- */
+:root {
+  /* Основные фоны */
+  --ink: #03050a;
+  --panel-deep: #0b0e14;
+  --panel-raise: #12161e;
+  
+  /* Границы и разделители */
+  --border-sharp: #1e2632;
+  
+  /* Акцентные цвета */
+  --accent-electric: #00e0ff;
+  --accent-blue: #2f6cff;
+  
+  /* Текст */
+  --text-primary: #ffffff;
+  --text-secondary: #a0b3d9;
+  --text-muted: #62748c;
+  
+  /* Свечение */
+  --glow-electric: rgba(0, 224, 255, 0.35);
+  --glow-blue: rgba(47, 108, 255, 0.25);
+}
+
+/* Улучшаем общий вид */
+body,
+body.rails_admin,
+.rails_admin {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  background: var(--ink) !important;
+  color: var(--text-primary) !important;
+  letter-spacing: -0.01em !important;
+  position: relative !important;
+}
+
+/* Техно-сетка (поверх всего) */
+body.rails_admin::before {
+  content: "" !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-image: 
+    linear-gradient(var(--border-sharp) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-sharp) 1px, transparent 1px) !important;
+  background-size: 48px 48px !important;
+  opacity: 0.2 !important;
+  pointer-events: none !important;
+  z-index: 9998 !important;
+}
+
+/* Сканирующая линия (микро-анимация) */
+body.rails_admin::after {
+  content: "" !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: repeating-linear-gradient(0deg, 
+    rgba(0,224,255,0) 0px, 
+    rgba(0,224,255,0.02) 2px, 
+    transparent 4px
+  ) !important;
+  pointer-events: none !important;
+  z-index: 9999 !important;
+  opacity: 0.3 !important;
+}
+
+/* Неоновый текст */
+.neon-electric {
+  color: var(--accent-electric) !important;
+  text-shadow: 0 0 12px var(--accent-electric), 0 0 30px rgba(0,224,255,0.4) !important;
+}
+
+/* Кастомная верхняя панель админки */
+.admin-top-bar {
+  background: var(--panel-deep) !important;
+  border-bottom: 1px solid var(--border-sharp) !important;
+  padding: 8px 12px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+@media (min-width: 640px) {
+  .admin-top-bar {
+    padding: 10px 16px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .admin-top-bar {
+    padding: 12px 24px !important;
+  }
+}
+
+.admin-top-bar-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+}
+
+@media (min-width: 768px) {
+  .admin-top-bar-left {
+    gap: 20px !important;
+  }
+}
+
+.admin-top-bar-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+@media (min-width: 640px) {
+  .admin-top-bar-right {
+    gap: 12px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .admin-top-bar-right {
+    gap: 16px !important;
+  }
+}
+
+.admin-top-bar-title {
+  color: var(--accent-electric) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  text-shadow: 0 0 8px var(--accent-electric) !important;
+  font-size: 0.75rem !important;
+}
+
+@media (min-width: 640px) {
+  .admin-top-bar-title {
+    font-size: 0.85rem !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .admin-top-bar-title {
+    font-size: 0.95rem !important;
+  }
+}
+
+.admin-top-bar-email {
+  color: var(--text-secondary) !important;
+  font-size: 0.8rem !important;
+}
+
+@media (min-width: 768px) {
+  .admin-top-bar-email {
+    font-size: 0.9rem !important;
+  }
+}
+
+.admin-top-bar-separator {
+  color: var(--text-muted) !important;
+}
+
+.admin-nav-link {
+  color: var(--text-secondary) !important;
+  text-decoration: none !important;
+  padding: 6px 10px !important;
+  border: 1px solid var(--border-sharp) !important;
+  background: var(--panel-raise) !important;
+  transition: all 0.2s ease !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 44px !important;
+  min-width: 44px !important;
+}
+
+@media (min-width: 640px) {
+  .admin-nav-link {
+    padding: 8px 12px !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .admin-nav-link {
+    font-size: 0.85rem !important;
+  }
+}
+
+.admin-nav-link:hover {
+  color: var(--accent-electric) !important;
+  border-color: var(--accent-electric) !important;
+  box-shadow: 0 0 10px var(--glow-electric) !important;
+  text-shadow: 0 0 8px var(--accent-electric) !important;
+}
+
+.admin-nav-link-logout {
+  color: #ff3b7f !important;
+  border-color: #ff3b7f !important;
+  font-weight: 600 !important;
+}
+
+.admin-nav-link-logout:hover {
+  color: #fff !important;
+  background: #ff3b7f !important;
+  box-shadow: 0 0 15px rgba(255,59,127,0.5) !important;
+  text-shadow: none !important;
+}
+
+/* Улучшаем навигацию */
+.navbar,
+.navbar-default,
+.navbar-inverse {
+  background: var(--panel-deep) !important;
+  border-bottom: 1px solid var(--border-sharp) !important;
+  box-shadow: 0 20px 35px -15px rgba(0,0,0,0.8) !important;
+  border-radius: 0 !important;
+}
+
+.navbar-brand {
+  font-weight: 600 !important;
+  font-size: 1.2rem !important;
+  color: var(--accent-electric) !important;
+  text-shadow: 0 0 12px var(--accent-electric), 0 0 30px rgba(0,224,255,0.4) !important;
+  letter-spacing: 1px !important;
+}
+
+.navbar-nav .nav-link {
+  color: var(--text-secondary) !important;
+  transition: all 0.3s ease !important;
+  padding: 12px 16px !important;
+  border-radius: 0 !important;
+}
+
+.navbar-nav .nav-link:hover {
+  color: var(--accent-electric) !important;
+  background: var(--panel-raise) !important;
+  border-bottom: 2px solid var(--accent-electric) !important;
+  text-shadow: 0 0 8px var(--accent-electric) !important;
+}
+
+.navbar-nav .nav-link.active {
+  color: var(--accent-electric) !important;
+  background: var(--panel-raise) !important;
+  border-bottom: 2px solid var(--accent-electric) !important;
+}
+
+/* Улучшаем таблицы */
+/* Обертка для таблиц с горизонтальным скроллом на мобильных */
+.table-wrapper {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  margin: 0 -8px !important;
+  padding: 0 8px !important;
+}
+
+@media (min-width: 768px) {
+  .table-wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* Автоматическая обертка всех таблиц на мобильных */
+@media (max-width: 767px) {
+  .table {
+    min-width: 600px !important;
+  }
+  
+  /* Обертываем таблицы в контейнерах RailsAdmin */
+  .content > .table,
+  .dashboard-models > .table,
+  .dashboard-stats .table {
+    display: block !important;
+  }
+  
+  .content > .table-wrapper,
+  .dashboard-models > .table-wrapper,
+  .dashboard-stats .table-wrapper {
+    display: block !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+
+.table {
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  background: var(--panel-raise) !important;
+  border: 1px solid var(--border-sharp) !important;
+  box-shadow: 0 20px 35px -15px rgba(0,0,0,0.8) !important;
+}
+
+.table thead {
+  background: var(--panel-deep) !important;
+  font-weight: 600 !important;
+  border-bottom: 2px solid var(--accent-electric) !important;
+}
+
+.table thead th {
+  color: var(--accent-electric) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  font-size: 0.85rem !important;
+  border-color: var(--border-sharp) !important;
+}
+
+.table tbody {
+  background: var(--panel-raise) !important;
+}
+
+.table tbody tr {
+  transition: all 0.2s ease !important;
+  border-color: var(--border-sharp) !important;
+}
+
+.table tbody tr:hover {
+  background-color: var(--panel-deep) !important;
+  border-left: 3px solid var(--accent-electric) !important;
+  box-shadow: 0 0 20px var(--glow-electric) !important;
+}
+
+.table tbody tr td {
+  color: var(--text-secondary) !important;
+  border-color: var(--border-sharp) !important;
+}
+
+.table td, .table th {
+  padding: 12px 16px !important;
+  border-color: var(--border-sharp) !important;
+}
+
+/* Адаптивные размеры для таблиц на мобильных */
+@media (max-width: 767px) {
+  .table td, .table th {
+    padding: 8px 10px !important;
+    font-size: 0.85rem !important;
+  }
+  
+  .table thead th {
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Улучшаем кнопки */
+.btn {
+  border-radius: 0 !important;
+  font-weight: 600 !important;
+  padding: 10px 20px !important;
+  transition: all 0.2s ease !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  font-size: 0.85rem !important;
+  border: none !important;
+}
+
+.btn-primary {
+  background: var(--accent-blue) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 6px 0 #001a4f !important;
+}
+
+.btn-primary:hover {
+  background: var(--accent-blue) !important;
+  transform: translateY(2px) !important;
+  box-shadow: 0 4px 0 #001a4f !important;
+  text-shadow: 0 0 8px rgba(255,255,255,0.5) !important;
+}
+
+/* Улучшаем кнопки Delete - делаем их более заметными */
+a[href*="/delete"],
+.btn-danger {
+  background: #ff3b7f !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 6px 0 #8b1a3d !important;
+}
+
+.btn-danger:hover {
+  transform: translateY(2px) !important;
+  box-shadow: 0 4px 0 #8b1a3d !important;
+}
+
+.btn-success {
+  background: var(--accent-electric) !important;
+  color: var(--ink) !important;
+  box-shadow: 0 6px 0 #0088a3 !important;
+  font-weight: 700 !important;
+}
+
+.btn-success:hover {
+  transform: translateY(2px) !important;
+  box-shadow: 0 4px 0 #0088a3 !important;
+  text-shadow: 0 0 8px rgba(0,0,0,0.3) !important;
+}
+
+.btn-default,
+.btn-secondary {
+  background: var(--panel-deep) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-sharp) !important;
+}
+
+.btn-default:hover,
+.btn-secondary:hover {
+  background: var(--panel-raise) !important;
+  border-color: var(--accent-electric) !important;
+  color: var(--accent-electric) !important;
+}
+
+/* Улучшаем формы */
+.form-control, .form-select {
+  border-radius: 0 !important;
+  border: 1px solid var(--border-sharp) !important;
+  background: var(--panel-deep) !important;
+  color: var(--text-primary) !important;
+  padding: 10px 12px !important;
+  transition: all 0.2s ease !important;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--accent-electric) !important;
+  background: var(--panel-raise) !important;
+  box-shadow: 0 0 20px var(--glow-electric) !important;
+  outline: none !important;
+  color: var(--text-primary) !important;
+}
+
+.form-control::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* Улучшаем карточки и панели */
+.panel, .card, .box, .well {
+  border-radius: 0 !important;
+  background: var(--panel-raise) !important;
+  border: 1px solid var(--border-sharp) !important;
+  box-shadow: 0 20px 35px -15px rgba(0,0,0,0.8) !important;
+  transition: border 0.2s, box-shadow 0.3s, transform 0.15s !important;
+}
+
+.panel:hover, .card:hover, .box:hover, .well:hover {
+  border: 1px solid var(--accent-electric) !important;
+  box-shadow: 0 25px 40px -20px var(--glow-electric) !important;
+  transform: translateY(-2px) !important;
+}
+
+.panel-heading, .card-header, .box-header {
+  background: var(--panel-deep) !important;
+  border-bottom: 1px solid var(--border-sharp) !important;
+  padding: 16px 20px !important;
+  font-weight: 600 !important;
+  color: var(--accent-electric) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+.panel-body, .card-body, .box-body {
+  padding: 20px !important;
+  background: var(--panel-raise) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* Улучшаем дашборд */
+.dashboard {
+  background: var(--ink) !important;
+  min-height: 100vh !important;
+}
+
+/* Улучшаем пагинацию - скрываем если не нужна */
+.pagination {
+  margin: 20px 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  width: 100% !important;
+}
+
+.pagination > li > a,
+.pagination > li > span {
+  border-radius: 0 !important;
+  margin: 0 2px !important;
+  border: 1px solid var(--border-sharp) !important;
+  background: var(--panel-deep) !important;
+  color: var(--text-secondary) !important;
+  padding: 8px 12px !important;
+  transition: all 0.2s ease !important;
+  min-width: 40px !important;
+  text-align: center !important;
+}
+
+.pagination > li > a:hover {
+  background: var(--panel-raise) !important;
+  border-color: var(--accent-electric) !important;
+  color: var(--accent-electric) !important;
+  box-shadow: 0 0 10px var(--glow-electric) !important;
+}
+
+.pagination > .active > a,
+.pagination > .active > span {
+  background: var(--accent-blue) !important;
+  border-color: var(--accent-blue) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 0 15px var(--glow-blue) !important;
+}
+
+/* Улучшаем отображение информации о папках внизу - делаем на всю ширину */
+.well,
+.info-box,
+.alert-info {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 16px 20px !important;
+  box-sizing: border-box !important;
+}
+
+/* Улучшаем пагинацию - центрируем и делаем на всю ширину */
+.pagination-wrapper,
+.pagination-container {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  margin: 20px 0 !important;
+}
+
+/* Убираем лишние отступы внизу */
+.content,
+.container-fluid,
+#content {
+  padding-bottom: 24px !important;
+}
+
+/* Скрываем дублирующую информацию внизу если она не нужна */
+.well:empty,
+.info-box:empty {
+  display: none !important;
+}
+
+/* Улучшаем алерты */
+.alert {
+  border-radius: 0 !important;
+  border: 1px solid var(--border-sharp) !important;
+  box-shadow: 0 20px 35px -15px rgba(0,0,0,0.8) !important;
+  padding: 16px 20px !important;
+  background: var(--panel-raise) !important;
+}
+
+.alert-success {
+  border-color: var(--accent-electric) !important;
+  background: var(--panel-raise) !important;
+  color: var(--accent-electric) !important;
+  box-shadow: 0 0 20px var(--glow-electric) !important;
+}
+
+.alert-danger {
+  border-color: #ff3b7f !important;
+  background: var(--panel-raise) !important;
+  color: #ff3b7f !important;
+  box-shadow: 0 0 20px rgba(255,59,127,0.3) !important;
+}
+
+.alert-info {
+  border-color: var(--accent-blue) !important;
+  background: var(--panel-raise) !important;
+  color: var(--accent-blue) !important;
+  box-shadow: 0 0 20px var(--glow-blue) !important;
+}
+
+.alert-warning {
+  border-color: #ffaa00 !important;
+  background: var(--panel-raise) !important;
+  color: #ffaa00 !important;
+  box-shadow: 0 0 20px rgba(255,170,0,0.3) !important;
+}
+
+/* Улучшаем боковую панель */
+.sidebar,
+.sidebar-nav,
+#sidebar {
+  background: var(--panel-deep) !important;
+  border-right: 1px solid var(--border-sharp) !important;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.5) !important;
+}
+
+.sidebar-nav .nav > li > a,
+.nav-sidebar > li > a {
+  padding: 12px 20px !important;
+  color: var(--text-secondary) !important;
+  transition: all 0.2s ease !important;
+  border-radius: 0 !important;
+  border-left: 3px solid transparent !important;
+}
+
+.sidebar-nav .nav > li > a:hover,
+.nav-sidebar > li > a:hover {
+  background: var(--panel-raise) !important;
+  color: var(--accent-electric) !important;
+  border-left: 3px solid var(--accent-electric) !important;
+  text-shadow: 0 0 8px var(--accent-electric) !important;
+}
+
+.sidebar-nav .nav > li.active > a,
+.nav-sidebar > li.active > a {
+  background: var(--panel-raise) !important;
+  color: var(--accent-electric) !important;
+  border-left: 3px solid var(--accent-electric) !important;
+  box-shadow: 0 0 15px var(--glow-electric) !important;
+}
+
+/* Улучшаем контент */
+.content,
+.container-fluid,
+#content {
+  padding: 24px !important;
+  background: var(--ink) !important;
+  color: var(--text-primary) !important;
+  min-height: 100vh !important;
+}
+
+/* Улучшаем заголовки */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--accent-electric) !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 12px var(--accent-electric), 0 0 30px rgba(0,224,255,0.4) !important;
+}
+
+.page-header {
+  border-bottom: 2px solid var(--accent-electric) !important;
+  padding-bottom: 16px !important;
+  margin-bottom: 24px !important;
+}
+
+.page-header h1 {
+  color: var(--accent-electric) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+}
+
+/* Улучшаем ссылки */
+a {
+  color: var(--accent-blue) !important;
+  transition: all 0.2s ease !important;
+}
+
+a:hover {
+  color: var(--accent-electric) !important;
+  text-shadow: 0 0 8px var(--accent-electric) !important;
+  text-decoration: none !important;
+}
+
+/* Улучшаем бейджи */
+.badge, .label {
+  padding: 6px 12px !important;
+  border-radius: 0 !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  border: 1px solid var(--border-sharp) !important;
+  background: var(--panel-deep) !important;
+  color: var(--text-secondary) !important;
+}
+
+.badge-primary,
+.label-primary {
+  background: var(--accent-blue) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--accent-blue) !important;
+}
+
+.badge-success,
+.label-success {
+  background: var(--accent-electric) !important;
+  color: var(--ink) !important;
+  border-color: var(--accent-electric) !important;
+}
+
+.badge-danger,
+.label-danger {
+  background: #ff3b7f !important;
+  color: var(--text-primary) !important;
+  border-color: #ff3b7f !important;
+}
+
+/* Улучшаем иконки */
+.fa, .fas, .far, .fal, .fab {
+  margin-right: 6px !important;
+  color: var(--accent-electric) !important;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.content,
+.container-fluid {
+  animation: fadeIn 0.3s ease !important;
+}
+
+/* Улучшаем модальные окна */
+.modal-content {
+  border-radius: 0 !important;
+  border: 1px solid var(--border-sharp) !important;
+  background: var(--panel-raise) !important;
+  box-shadow: 0 20px 35px -15px rgba(0,0,0,0.8) !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border-sharp) !important;
+  padding: 20px 24px !important;
+  background: var(--panel-deep) !important;
+}
+
+.modal-header .modal-title {
+  color: var(--accent-electric) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+.modal-body {
+  padding: 24px !important;
+  background: var(--panel-raise) !important;
+  color: var(--text-secondary) !important;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border-sharp) !important;
+  padding: 16px 24px !important;
+  background: var(--panel-deep) !important;
+}
+
+.modal .close {
+  color: var(--text-secondary) !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+.modal .close:hover {
+  color: var(--accent-electric) !important;
+  text-shadow: 0 0 8px var(--accent-electric) !important;
+}
+
+/* Улучшаем фильтры */
+.filter {
+  background: var(--panel-deep) !important;
+  padding: 16px !important;
+  border-radius: 0 !important;
+  margin-bottom: 20px !important;
+  border: 1px solid var(--border-sharp) !important;
+}
+
+/* Улучшаем статистические карточки на дашборде */
+.row-fluid .span3,
+.row-fluid .span4 {
+  margin-bottom: 20px !important;
+}
+
+.well {
+  background: var(--panel-raise) !important;
+  border: 1px solid var(--border-sharp) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 20px 35px -15px rgba(0,0,0,0.8) !important;
+  padding: 20px !important;
+}
+
+.stat-card {
+  background: var(--panel-raise) !important;
+  border: 1px solid var(--border-sharp) !important;
+  color: var(--text-primary) !important;
+  padding: 24px !important;
+  border-radius: 0 !important;
+  box-shadow: 0 20px 35px -15px rgba(0,0,0,0.8) !important;
+  transition: all 0.3s ease !important;
+}
+
+.stat-card:hover {
+  border: 1px solid var(--accent-electric) !important;
+  box-shadow: 0 25px 40px -20px var(--glow-electric) !important;
+  transform: translateY(-2px) !important;
+}
+
+.stat-card h3 {
+  color: var(--accent-electric) !important;
+  margin: 0 0 8px 0 !important;
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  text-shadow: 0 0 12px var(--accent-electric), 0 0 30px rgba(0,224,255,0.4) !important;
+}
+
+.stat-card p {
+  color: var(--text-secondary) !important;
+  margin: 0 !important;
+  font-size: 0.9rem !important;
+}
+
+/* Улучшаем таблицы данных */
+.table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: var(--panel-deep) !important;
+}
+
+.table-striped > tbody > tr:nth-of-type(even) {
+  background-color: var(--panel-raise) !important;
+}
+
+/* Улучшаем формы редактирования */
+.form-group {
+  margin-bottom: 20px !important;
+}
+
+.form-group label {
+  font-weight: 600 !important;
+  color: var(--accent-electric) !important;
+  margin-bottom: 8px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  font-size: 0.85rem !important;
+}
+
+/* Улучшаем кнопки действий */
+.btn-group .btn {
+  margin-right: 8px !important;
+}
+
+/* Улучшаем breadcrumbs */
+.breadcrumb {
+  background: transparent !important;
+  padding: 0 !important;
+  margin-bottom: 20px !important;
+}
+
+.breadcrumb > li + li:before {
+  content: "›" !important;
+  color: var(--accent-electric) !important;
+  text-shadow: 0 0 8px var(--accent-electric) !important;
+}
+
+.breadcrumb > li > a {
+  color: var(--text-secondary) !important;
+}
+
+.breadcrumb > li > a:hover {
+  color: var(--accent-electric) !important;
+}
+
+.breadcrumb > .active {
+  color: var(--accent-electric) !important;
+  font-weight: 600 !important;
+}
+
+/* Улучшаем чекбоксы и радиокнопки */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--accent-electric) !important;
+}
+
+/* Улучшаем селекты */
+select.form-control,
+select.form-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300e0ff' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px center !important;
+  padding-right: 35px !important;
+}
+
+/* Улучшаем файловые инпуты */
+input[type="file"] {
+  color: var(--text-secondary) !important;
+}
+
+input[type="file"]::file-selector-button {
+  background: var(--accent-blue) !important;
+  color: var(--text-primary) !important;
+  border: none !important;
+  padding: 8px 16px !important;
+  border-radius: 0 !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background: var(--accent-electric) !important;
+  color: var(--ink) !important;
+}
+
+/* Улучшаем текстовые области */
+textarea.form-control {
+  background: var(--panel-deep) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-sharp) !important;
+}
+
+textarea.form-control:focus {
+  border-color: var(--accent-electric) !important;
+  background: var(--panel-raise) !important;
+  box-shadow: 0 0 20px var(--glow-electric) !important;
+}
+
+/* Улучшаем датапикеры */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  color: var(--text-primary) !important;
+}
+
+/* Улучшаем поиск */
+input[type="search"] {
+  background: var(--panel-deep) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-sharp) !important;
+}
+
+input[type="search"]:focus {
+  border-color: var(--accent-electric) !important;
+  box-shadow: 0 0 20px var(--glow-electric) !important;
+}
+
+/* Улучшаем табы */
+.nav-tabs {
+  border-bottom: 2px solid var(--border-sharp) !important;
+}
+
+.nav-tabs > li > a {
+  color: var(--text-secondary) !important;
+  background: var(--panel-deep) !important;
+  border: 1px solid var(--border-sharp) !important;
+  border-bottom: none !important;
+  border-radius: 0 !important;
+}
+
+.nav-tabs > li > a:hover {
+  background: var(--panel-raise) !important;
+  border-color: var(--accent-electric) !important;
+  color: var(--accent-electric) !important;
+}
+
+.nav-tabs > li.active > a {
+  background: var(--panel-raise) !important;
+  border-color: var(--accent-electric) !important;
+  border-bottom-color: var(--panel-raise) !important;
+  color: var(--accent-electric) !important;
+  box-shadow: 0 0 15px var(--glow-electric) !important;
+}
+
+/* Улучшаем аккордеоны */
+.panel-group .panel {
+  border: 1px solid var(--border-sharp) !important;
+}
+
+.panel-group .panel-heading {
+  background: var(--panel-deep) !important;
+}
+
+.panel-group .panel-heading a {
+  color: var(--accent-electric) !important;
+}
+
+.panel-group .panel-body {
+  background: var(--panel-raise) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* Улучшаем тултипы */
+.tooltip .tooltip-inner {
+  background: var(--panel-deep) !important;
+  color: var(--accent-electric) !important;
+  border: 1px solid var(--accent-electric) !important;
+  box-shadow: 0 0 20px var(--glow-electric) !important;
+}
+
+.tooltip .tooltip-arrow {
+  border-top-color: var(--accent-electric) !important;
+}
+
+/* Улучшаем поповеры */
+.popover {
+  background: var(--panel-raise) !important;
+  border: 1px solid var(--accent-electric) !important;
+  box-shadow: 0 0 20px var(--glow-electric) !important;
+  border-radius: 0 !important;
+}
+
+.popover-title {
+  background: var(--panel-deep) !important;
+  border-bottom: 1px solid var(--border-sharp) !important;
+  color: var(--accent-electric) !important;
+}
+
+.popover-content {
+  color: var(--text-secondary) !important;
+}
+
+/* Улучшаем дропдауны */
+.dropdown-menu {
+  background: var(--panel-raise) !important;
+  border: 1px solid var(--border-sharp) !important;
+  box-shadow: 0 20px 35px -15px rgba(0,0,0,0.8) !important;
+  border-radius: 0 !important;
+}
+
+.dropdown-menu > li > a {
+  color: var(--text-secondary) !important;
+  padding: 10px 20px !important;
+}
+
+.dropdown-menu > li > a:hover {
+  background: var(--panel-deep) !important;
+  color: var(--accent-electric) !important;
+  text-shadow: 0 0 8px var(--accent-electric) !important;
+}
+
+.dropdown-menu > .active > a {
+  background: var(--panel-deep) !important;
+  color: var(--accent-electric) !important;
+}
+
+/* Улучшаем списки */
+.list-group {
+  background: var(--panel-raise) !important;
+  border: 1px solid var(--border-sharp) !important;
+  border-radius: 0 !important;
+}
+
+.list-group-item {
+  background: var(--panel-raise) !important;
+  border-color: var(--border-sharp) !important;
+  color: var(--text-secondary) !important;
+}
+
+.list-group-item:hover {
+  background: var(--panel-deep) !important;
+  border-left: 3px solid var(--accent-electric) !important;
+  color: var(--accent-electric) !important;
+}
+
+.list-group-item.active {
+  background: var(--panel-deep) !important;
+  border-color: var(--accent-electric) !important;
+  border-left: 3px solid var(--accent-electric) !important;
+  color: var(--accent-electric) !important;
+  box-shadow: 0 0 15px var(--glow-electric) !important;
+}
+
+/* Улучшаем прогресс-бары */
+.progress {
+  background: var(--panel-deep) !important;
+  border: 1px solid var(--border-sharp) !important;
+  border-radius: 0 !important;
+  height: 20px !important;
+}
+
+.progress-bar {
+  background: var(--accent-electric) !important;
+  box-shadow: 0 0 10px var(--glow-electric) !important;
+}
+
+.progress-bar-success {
+  background: var(--accent-electric) !important;
+}
+
+.progress-bar-info {
+  background: var(--accent-blue) !important;
+}
+
+.progress-bar-danger {
+  background: #ff3b7f !important;
+}
+
+/* Улучшаем блоки кода */
+pre, code {
+  background: var(--panel-deep) !important;
+  color: var(--accent-electric) !important;
+  border: 1px solid var(--border-sharp) !important;
+  border-radius: 0 !important;
+}
+
+/* Улучшаем блоки */
+.blockquote {
+  border-left: 3px solid var(--accent-electric) !important;
+  color: var(--text-secondary) !important;
+  padding-left: 20px !important;
+}
+
+/* Улучшаем разделители */
+hr {
+  border-color: var(--border-sharp) !important;
+  border-width: 1px !important;
+}
+
+/* Улучшаем скроллбары */
+::-webkit-scrollbar {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--panel-deep) !important;
+  border: 1px solid var(--border-sharp) !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--panel-raise) !important;
+  border: 1px solid var(--border-sharp) !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-electric) !important;
+  box-shadow: 0 0 10px var(--glow-electric) !important;
+}
+
+/* ========== DASHBOARD STATISTICS PANEL ========== */
+
+.dashboard-container {
+  display: flex;
+  gap: 24px;
+  padding: 20px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.dashboard-models {
+  flex: 0 0 60%;
+  max-width: 60%;
+  min-width: 0; /* Позволяет таблице сжиматься */
+}
+
+.dashboard-stats {
+  flex: 0 0 38%;
+  max-width: 38%;
+  min-width: 0;
+}
+
+.stats-panel {
+  background: var(--panel-deep, #1a1a2e) !important;
+  border: 1px solid var(--border-sharp, #2a2a3e) !important;
+  border-radius: 8px !important;
+  padding: 20px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+.stats-panel h2 {
+  color: var(--accent-electric, #00e0ff) !important;
+  margin-top: 0 !important;
+  margin-bottom: 20px !important;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  text-shadow: 0 0 12px var(--accent-electric), 0 0 30px rgba(0,224,255,0.4) !important;
+}
+
+.stats-panel h3 {
+  color: var(--accent-blue, #667eea) !important;
+  font-size: 1.1rem !important;
+  margin-bottom: 12px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.stats-section {
+  margin-bottom: 24px !important;
+}
+
+.stat-card {
+  background: var(--panel-raise, #252540) !important;
+  padding: 12px !important;
+  border-radius: 6px !important;
+  margin-bottom: 8px !important;
+  transition: all 0.3s ease !important;
+  border-left: 3px solid transparent !important;
+}
+
+.stat-card:hover {
+  background: var(--panel-raise, #2a2a4a) !important;
+  transform: translateX(4px) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+}
+
+.stat-card strong {
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+}
+
+/* ========== IMAGE THUMBNAILS AND PREVIEW ========== */
+
+.image-thumbnail {
+  transition: all 0.3s ease !important;
+  border: 2px solid var(--border-sharp) !important;
+}
+
+.image-thumbnail:hover {
+  transform: scale(1.1) !important;
+  border-color: var(--accent-electric) !important;
+  box-shadow: 0 0 20px var(--glow-electric) !important;
+  z-index: 10 !important;
+  position: relative !important;
+}
+
+/* Модальное окно предпросмотра изображений */
+.image-preview-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(3, 5, 10, 0.95);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+}
+
+.image-preview-modal.active {
+  display: flex;
+}
+
+.image-preview-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  background: var(--panel-deep);
+  border: 2px solid var(--accent-electric);
+  box-shadow: 0 0 50px var(--glow-electric);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.image-preview-content img {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+}
+
+.image-preview-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--panel-raise);
+  border: 2px solid var(--accent-electric);
+  color: var(--accent-electric);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 24px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.image-preview-close:hover {
+  background: var(--accent-electric);
+  color: var(--ink);
+  box-shadow: 0 0 20px var(--glow-electric);
+  transform: rotate(90deg);
+}
+
+/* ========== STATUS BADGES ========== */
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Generation статусы */
+.status-badge.queued {
+  background: #ffc107;
+  color: #000;
+}
+
+.status-badge.running {
+  background: #2f6cff;
+  color: #fff;
+}
+
+.status-badge.succeeded {
+  background: #28a745;
+  color: #fff;
+}
+
+.status-badge.failed {
+  background: #dc3545;
+  color: #fff;
+}
+
+/* Payment статусы */
+.status-badge.pending {
+  background: #ffc107;
+  color: #000;
+}
+
+.status-badge.succeeded {
+  background: #28a745;
+  color: #fff;
+}
+
+.status-badge.failed {
+  background: #dc3545;
+  color: #fff;
+}
+
+/* Project статусы */
+.status-badge.active {
+  background: #28a745;
+  color: #fff;
+}
+
+.status-badge.archived {
+  background: #6c757d;
+  color: #fff;
+}
+
+/* User статусы */
+.status-badge.confirmed {
+  background: #28a745;
+  color: #fff;
+}
+
+.status-badge.unconfirmed {
+  background: #ffc107;
+  color: #000;
+}
+
+/* ========== TOKEN PROGRESS BARS ========== */
+
+.token-progress-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.token-progress-bar {
+  flex: 1;
+  height: 20px;
+  background: var(--panel-deep);
+  border: 1px solid var(--border-sharp);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.token-progress-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.token-progress-fill.low {
+  background: #dc3545;
+}
+
+.token-progress-fill.medium {
+  background: #ffc107;
+  color: #000;
+}
+
+.token-progress-fill.high {
+  background: #28a745;
+}
+
+.token-progress-value {
+  min-width: 60px;
+  text-align: right;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 1200px) {
+  .dashboard-container {
+    flex-direction: column !important;
+  }
+  
+  .dashboard-models,
+  .dashboard-stats {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .stats-panel {
+    position: relative !important;
+    top: 0 !important;
+    max-height: none !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .dashboard-container {
+    padding: 16px !important;
+    gap: 20px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 12px !important;
+    gap: 16px !important;
+  }
+  
+  .stats-panel h2 {
+    font-size: 1.2rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-container {
+    padding: 8px !important;
+    gap: 12px !important;
+  }
+  
+  .stats-panel h2 {
+    font-size: 1rem !important;
+  }
+}

@@ -1,0 +1,53 @@
+<div id="image-preview-modal" class="image-preview-modal">
+  <div class="image-preview-content">
+    <a href="#" class="image-preview-close" id="image-preview-close">&times;</a>
+    <img id="image-preview-img" src="" alt="Preview">
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('image-preview-modal');
+    const modalImg = document.getElementById('image-preview-img');
+    const closeBtn = document.getElementById('image-preview-close');
+    
+    // Открытие модального окна при клике на миниатюру
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('image-thumbnail')) {
+        e.preventDefault();
+        const fullUrl = e.target.dataset.fullUrl;
+        if (fullUrl) {
+          modalImg.src = fullUrl;
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
+      }
+    });
+    
+    // Закрытие модального окна
+    function closeModal() {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+      modalImg.src = '';
+    }
+    
+    closeBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      closeModal();
+    });
+    
+    // Закрытие при клике вне изображения
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+    
+    // Закрытие по Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && modal.classList.contains('active')) {
+        closeModal();
+      }
+    });
+  });
+</script>

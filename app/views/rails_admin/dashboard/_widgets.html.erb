@@ -1,0 +1,135 @@
+<% 
+  # Последние регистрации
+  recent_users = User.order(created_at: :desc).limit(10).includes(:projects, :generations, :token_transactions)
+  
+  # Последние платежи
+  recent_payments = Payment.order(created_at: :desc).limit(10).includes(:user, :token_package)
+  
+  # Проблемные генерации
+  failed_generations = Generation.where(status: 'failed')
+                                 .where('created_at > ?', 24.hours.ago)
+                                 .order(created_at: :desc)
+                                 .limit(10)
+                                 .includes(:user, :style, :input_image)
+%>
+
+<!-- Виджет последних регистраций -->
+<div class="widget-card" style="background: var(--panel-deep, #1a1a2e); border: 1px solid var(--border-sharp, #2a2a3e); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+  <h3 style="color: var(--accent-electric, #00e0ff); margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
+    <span>Последние регистрации</span>
+    <%= link_to '/admin/user', style: "color: var(--accent-electric, #00e0ff); text-decoration: none; font-size: 0.9rem;" do %>
+      Все →
+    <% end %>
+  </h3>
+  <div class="widget-list" style="max-height: 300px; overflow-y: auto;">
+    <% if recent_users.any? %>
+      <% recent_users.each do |user| %>
+        <div class="widget-item" style="padding: 10px; border-bottom: 1px solid var(--border-sharp, #2a2a3e); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <%= link_to "/admin/user/#{user.id}", style: "color: var(--text-primary, #ffffff); text-decoration: none; font-weight: 500;" do %>
+              <%= user.email %>
+            <% end %>
+            <div style="font-size: 0.85rem; color: var(--text-secondary, #a0a0a0); margin-top: 4px;">
+              <%= time_ago_in_words(user.created_at) %> назад
+              <% if user.confirmed_at %>
+                <span style="color: #28a745; margin-left: 8px;">✓ Подтвержден</span>
+              <% else %>
+                <span style="color: #ffc107; margin-left: 8px;">⏳ Не подтвержден</span>
+              <% end %>
+            </div>
+          </div>
+          <div style="text-align: right; font-size: 0.85rem; color: var(--text-secondary, #a0a0a0);">
+            <%= user.projects.count %> проектов
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <div style="color: var(--text-secondary, #a0a0a0); text-align: center; padding: 20px;">
+        Нет зарегистрированных пользователей
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Виджет последних платежей -->
+<div class="widget-card" style="background: var(--panel-deep, #1a1a2e); border: 1px solid var(--border-sharp, #2a2a3e); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+  <h3 style="color: var(--accent-blue, #667eea); margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
+    <span>Последние платежи</span>
+    <%= link_to '/admin/payment', style: "color: var(--accent-blue, #667eea); text-decoration: none; font-size: 0.9rem;" do %>
+      Все →
+    <% end %>
+  </h3>
+  <div class="widget-list" style="max-height: 300px; overflow-y: auto;">
+    <% if recent_payments.any? %>
+      <% recent_payments.each do |payment| %>
+        <div class="widget-item" style="padding: 10px; border-bottom: 1px solid var(--border-sharp, #2a2a3e); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <%= link_to "/admin/payment/#{payment.id}", style: "color: var(--text-primary, #ffffff); text-decoration: none; font-weight: 500;" do %>
+              <%= payment.user.email %>
+            <% end %>
+            <div style="font-size: 0.85rem; color: var(--text-secondary, #a0a0a0); margin-top: 4px;">
+              <%= payment.token_package.name %> • <%= time_ago_in_words(payment.created_at) %> назад
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-weight: 600; color: #28a745;">
+              <%= number_with_delimiter((payment.amount_cents || 0) / 100.0, delimiter: ' ') %> ₽
+            </div>
+            <div style="font-size: 0.85rem; margin-top: 4px;">
+              <% case payment.status %>
+              <% when 'succeeded' %>
+                <span style="color: #28a745;">✓ Успешно</span>
+              <% when 'pending' %>
+                <span style="color: #ffc107;">⏳ Ожидание</span>
+              <% when 'failed' %>
+                <span style="color: #dc3545;">✗ Ошибка</span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <div style="color: var(--text-secondary, #a0a0a0); text-align: center; padding: 20px;">
+        Нет платежей
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Виджет проблемных генераций -->
+<div class="widget-card" style="background: var(--panel-deep, #1a1a2e); border: 1px solid var(--border-sharp, #2a2a3e); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+  <h3 style="color: #dc3545; margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
+    <span>Проблемные генерации (24ч)</span>
+    <%= link_to '/admin/generation?f[status][v]=failed', style: "color: #dc3545; text-decoration: none; font-size: 0.9rem;" do %>
+      Все →
+    <% end %>
+  </h3>
+  <div class="widget-list" style="max-height: 300px; overflow-y: auto;">
+    <% if failed_generations.any? %>
+      <% failed_generations.each do |generation| %>
+        <div class="widget-item" style="padding: 10px; border-bottom: 1px solid var(--border-sharp, #2a2a3e);">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+            <div>
+              <%= link_to "/admin/generation/#{generation.id}", style: "color: var(--text-primary, #ffffff); text-decoration: none; font-weight: 500;" do %>
+                Генерация #<%= generation.id %>
+              <% end %>
+              <div style="font-size: 0.85rem; color: var(--text-secondary, #a0a0a0); margin-top: 4px;">
+                <%= generation.user.email %> • <%= generation.style.name %> • <%= time_ago_in_words(generation.created_at) %> назад
+              </div>
+            </div>
+            <span style="color: #dc3545; font-size: 0.85rem; font-weight: 600;">✗ Failed</span>
+          </div>
+          <% if generation.error.present? %>
+            <div style="font-size: 0.8rem; color: #dc3545; background: rgba(220, 53, 69, 0.1); padding: 8px; border-radius: 4px; margin-top: 8px; max-height: 60px; overflow-y: auto;">
+              <%= truncate(generation.error, length: 150) %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <div style="color: var(--text-secondary, #a0a0a0); text-align: center; padding: 20px;">
+        Нет проблемных генераций за последние 24 часа
+      </div>
+    <% end %>
+  </div>
+</div>

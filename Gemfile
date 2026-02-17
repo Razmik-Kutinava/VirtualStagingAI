@@ -71,3 +71,16 @@ gem "tailwindcss-rails", "~> 4.4"
 
 # Authentication
 gem "devise"
+
+# Admin panel
+gem "rails_admin", "~> 3.0"
+
+# Excel export (caxlsx is a fork of axlsx that supports Ruby 3.4+)
+gem "caxlsx"
+gem "caxlsx_rails"
+
+# Date grouping for statistics
+gem "groupdate"
+
+# Geocoding for IP addresses (optional)
+gem "geocoder"

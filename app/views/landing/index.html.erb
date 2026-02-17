@@ -76,6 +76,10 @@
             box-shadow: 6px 6px 0 var(--pink);
             transition: 0.1s linear;
             border: none;
+            pointer-events: auto !important;
+            cursor: pointer !important;
+            text-decoration: none !important;
+            display: inline-block !important;
         }
         .btn-flash:hover {
             background: #fff150;
@@ -91,6 +95,10 @@
             letter-spacing: 2px;
             text-transform: uppercase;
             border-radius: 2px;
+            pointer-events: auto !important;
+            cursor: pointer !important;
+            text-decoration: none !important;
+            display: inline-block !important;
         }
 
         /* цифры статистики — жёлтые, жирные */
@@ -176,6 +184,86 @@
             background: var(--yellow);
             box-shadow: 0 0 12px var(--yellow);
         }
+
+        /* Мобильное меню */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 13, 16, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu-drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            max-width: 85vw;
+            height: 100%;
+            background: #12161c;
+            border-right: 2px solid var(--pink);
+            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .mobile-menu-drawer.active {
+            transform: translateX(0);
+        }
+
+        .hamburger-btn {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1001;
+        }
+
+        .hamburger-btn span {
+            width: 100%;
+            height: 3px;
+            background: var(--yellow);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 4px var(--yellow);
+        }
+
+        .hamburger-btn.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger-btn.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-btn.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(8px, -8px);
+        }
+
+        @media (min-width: 768px) {
+            .hamburger-btn {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body class="vhs-overlay">
@@ -188,7 +276,7 @@
                 <div class="w-9 h-9 bg-[#ffe600] rotate-12 shadow-[4px_4px_0_#ff3b7f]"></div>
                 <span class="text-2xl font-black text-white tracking-tight" style="text-shadow: 2px 2px 0 #ff3b7f;">VSAI</span>
             </div>
-            <!-- центр навигации -->
+            <!-- центр навигации (десктоп) -->
             <div class="hidden md:flex items-center space-x-8 font-bold uppercase text-sm tracking-wide">
                 <a href="#gallery" class="nav-link text-white/80 hover:text-[#00f7f6] transition-all duration-200 py-2 px-1 cursor-pointer relative">Галерея</a>
                 <a href="#styles" class="nav-link text-white/80 hover:text-[#00f7f6] transition-all duration-200 py-2 px-1 cursor-pointer relative">Стили</a>
@@ -196,8 +284,8 @@
                 <a href="#pricing" id="nav-pricing" class="nav-link text-white/80 hover:text-[#00f7f6] transition-all duration-200 py-2 px-1 cursor-pointer relative">Цены</a>
                 <a href="#" class="nav-link text-white/80 hover:text-[#00f7f6] transition-all duration-200 py-2 px-1 cursor-pointer relative">API</a>
             </div>
-            <!-- вход / регистрация -->
-            <div class="flex items-center space-x-5">
+            <!-- вход / регистрация (десктоп) -->
+            <div class="hidden md:flex items-center space-x-5">
                 <%= link_to new_user_session_path, class: "text-white/70 hover:text-[#ffe600] text-sm font-bold uppercase tracking-wide transition-colors" do %>
                     Войти
                 <% end %>
@@ -205,58 +293,120 @@
                     Регистрация
                 <% end %>
             </div>
+            <!-- Hamburger кнопка (мобильные) -->
+            <button class="hamburger-btn md:hidden" id="mobile-menu-btn" aria-label="Открыть меню">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
     </nav>
 
+    <!-- Мобильное меню overlay -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+
+    <!-- Мобильное меню drawer -->
+    <div class="mobile-menu-drawer" id="mobile-menu-drawer">
+        <div class="p-6 border-b border-[#2a2e38]">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 bg-[#ffe600] rotate-12 shadow-[4px_4px_0_#ff3b7f]"></div>
+                    <span class="text-2xl font-black text-white tracking-tight" style="text-shadow: 2px 2px 0 #ff3b7f;">VSAI</span>
+                </div>
+                <button class="hamburger-btn active" id="mobile-menu-close" aria-label="Закрыть меню">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+        <nav class="p-6 space-y-4">
+            <a href="#gallery" class="block nav-link text-white/80 hover:text-[#00f7f6] text-lg font-bold uppercase tracking-wide py-3 border-b border-[#2a2e38] transition-colors mobile-nav-link">Галерея</a>
+            <a href="#styles" class="block nav-link text-white/80 hover:text-[#00f7f6] text-lg font-bold uppercase tracking-wide py-3 border-b border-[#2a2e38] transition-colors mobile-nav-link">Стили</a>
+            <a href="#how" class="block nav-link text-white/80 hover:text-[#00f7f6] text-lg font-bold uppercase tracking-wide py-3 border-b border-[#2a2e38] transition-colors mobile-nav-link">Как работает</a>
+            <a href="#pricing" class="block nav-link text-white/80 hover:text-[#00f7f6] text-lg font-bold uppercase tracking-wide py-3 border-b border-[#2a2e38] transition-colors mobile-nav-link">Цены</a>
+            <a href="#" class="block nav-link text-white/80 hover:text-[#00f7f6] text-lg font-bold uppercase tracking-wide py-3 border-b border-[#2a2e38] transition-colors mobile-nav-link">API</a>
+        </nav>
+        <div class="p-6 space-y-4 border-t border-[#2a2e38] mt-auto">
+            <%= link_to new_user_session_path, class: "block w-full text-center text-white/70 hover:text-[#ffe600] text-sm font-bold uppercase tracking-wide py-3 px-4 border border-[#2a2e38] hover:border-[#ffe600] transition-colors mobile-nav-link" do %>
+                Войти
+            <% end %>
+            <%= link_to new_user_registration_path, class: "block w-full text-center bg-[#ff3b7f] text-white px-5 py-3 text-sm font-bold uppercase tracking-widest shadow-[4px_4px_0_#ffe600] hover:shadow-[2px_2px_0_#ffe600] hover:translate-x-1 hover:translate-y-1 transition mobile-nav-link" do %>
+                Регистрация
+            <% end %>
+        </div>
+    </div>
+
     <!-- ========== ГЛАВНЫЙ ЭКРАН ========== -->
-    <section class="relative py-20 px-4 overflow-hidden" style="background: radial-gradient(circle at 80% 20%, #1a1022, #0b0d10);">
+    <section class="relative py-12 sm:py-16 md:py-20 px-4 overflow-hidden" style="background: radial-gradient(circle at 80% 20%, #1a1022, #0b0d10);">
         <div class="container mx-auto max-w-6xl relative z-20">
-            <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-center">
                 <div>
-                    <!-- больше никаких "AI·interior·photo" — убрал нахуй -->
-                    <h1 class="text-6xl md:text-7xl font-black uppercase leading-[1.1] tracking-[-0.03em] mb-6">
-                        <span class="neon-pink">СТАЙЛИНГ</span><br/>
-                        <span class="text-white">ЗА</span> 
-                        <span class="neon-cyan">15 СЕКУНД</span>
+                    <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black uppercase leading-[1.1] tracking-[-0.03em] mb-4 sm:mb-6">
+                        <span class="neon-pink">ПРОДАЙ КВАРТИРУ</span><br/>
+                        <span class="text-white">НА</span> 
+                        <span class="neon-cyan">17% ДОРОЖЕ</span>
                     </h1>
-                    <p class="text-2xl text-white/80 font-light mb-8 max-w-xl border-l-4 border-[#ff3b7f] pl-6">
-                        Загрузи фото — нейросеть расставит мебель. Без подписок. Без кредиток.
+                    <p class="text-lg sm:text-xl md:text-2xl text-white/80 font-light mb-4 sm:mb-6 max-w-xl">
+                        Пустые комнаты снижают цену.<br/>
+                        <span class="neon-cyan">Виртуальный стайлинг — повышает.</span>
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
-                        <a href="#" class="btn-flash px-10 py-5 text-lg inline-flex items-center gap-3">
-                            <span>📸</span> Загрузить бесплатно
-                        </a>
-                        <span class="flex items-center gap-3 text-white/70 text-base">
-                            <span class="bg-[#ffe600] w-2 h-2 rotate-45"></span> НЕ НУЖНА КАРТА
-                        </span>
+                    <div class="mb-6 sm:mb-8">
+                        <p class="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-4 sm:mb-6">
+                            <span class="neon-pink">3 БЕСПЛАТНЫХ СТАЙЛИНГА.</span><br/>
+                            <span class="neon-cyan">8 СТИЛЕЙ.</span> 
+                            <span class="text-white">15 СЕКУНД.</span>
+                        </p>
                     </div>
-                    <!-- соцпруф коротко -->
-                    <div class="flex mt-10 space-x-6 text-sm font-mono text-white/50">
-                        <span>⏻ 10 000+ АГЕНТОВ</span>
-                        <span>⚡ 15 СЕК В СРЕДНЕМ</span>
+                    <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center mb-6 sm:mb-8">
+                        <% if user_signed_in? %>
+                            <%= link_to dashboard_path, class: "btn-flash px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 text-base sm:text-lg inline-flex items-center gap-2 sm:gap-3 min-h-[44px]" do %>
+                                <span>📸</span> <span>ЗАГРУЗИТЬ ПЕРВОЕ ФОТО БЕСПЛАТНО</span>
+                            <% end %>
+                        <% else %>
+                            <%= link_to new_user_registration_path, class: "btn-flash px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 text-base sm:text-lg inline-flex items-center gap-2 sm:gap-3 min-h-[44px]" do %>
+                                <span>📸</span> <span>ЗАГРУЗИТЬ ПЕРВОЕ ФОТО БЕСПЛАТНО</span>
+                            <% end %>
+                        <% end %>
+                    </div>
+                    <!-- соцпруф -->
+                    <div class="space-y-2 sm:space-y-3">
+                        <p class="text-sm sm:text-base text-white/70 font-medium">
+                            Уже <span class="text-white font-bold">10 000+ риелторов</span> продают быстрее
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 text-sm sm:text-base font-mono text-white/80">
+                            <span class="flex items-center gap-2">
+                                <span class="neon-pink font-bold">+17%</span>
+                                <span>Средний рост цены</span>
+                            </span>
+                            <span class="flex items-center gap-2">
+                                <span class="neon-cyan font-bold">x2</span>
+                                <span>Скорость продажи</span>
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <!-- BEFORE/AFTER СЛАЙДЕР — главная пушка -->
-                <div id="slider-container" class="relative rounded-none border-4 border-[#ffe600] shadow-[20px_20px_0px_#ff3b7f] bg-black cursor-ew-resize h-[400px] w-full">
+                <div id="slider-container" class="relative rounded-none border-2 sm:border-4 border-[#ffe600] shadow-[10px_10px_0px_#ff3b7f] sm:shadow-[20px_20px_0px_#ff3b7f] bg-black cursor-ew-resize h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px] w-full mt-6 lg:mt-0">
                     <img id="before-image" class="absolute top-0 left-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&auto=format&fit=crop" alt="пустая комната">
                     <img id="after-image" class="absolute top-0 left-0 w-1/2 h-full object-cover after-image" src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&auto=format&fit=crop" style="width: 50%;" alt="обставленная комната">
-                    <div id="slider" class="absolute top-0 left-1/2 w-1.5 h-full bg-[#ffe600] shadow-[0_0_15px_#00f7f6] slider-line" style="left: 50%;"></div>
-                    <span class="absolute bottom-4 left-4 bg-black/80 text-[#ffe600] px-4 py-2 text-sm font-bold border border-[#ffe600]">ДО</span>
-                    <span class="absolute bottom-4 right-4 bg-black/80 text-[#00f7f6] px-4 py-2 text-sm font-bold border border-[#00f7f6]">ПОСЛЕ</span>
+                    <div id="slider" class="absolute top-0 left-1/2 w-1 sm:w-1.5 h-full bg-[#ffe600] shadow-[0_0_15px_#00f7f6] slider-line" style="left: 50%;"></div>
+                    <span class="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 bg-black/80 text-[#ffe600] px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-bold border border-[#ffe600]">ДО</span>
+                    <span class="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 bg-black/80 text-[#00f7f6] px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-bold border border-[#00f7f6]">ПОСЛЕ</span>
                 </div>
             </div>
         </div>
         <!-- неоновые пятна -->
-        <div class="absolute top-20 right-0 w-96 h-96 bg-[#ff3b7f] rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-pulse"></div>
-        <div class="absolute bottom-0 left-0 w-80 h-80 bg-[#00f7f6] rounded-full mix-blend-multiply filter blur-[90px] opacity-20"></div>
+        <div class="absolute top-20 right-0 w-48 sm:w-64 md:w-96 h-48 sm:h-64 md:h-96 bg-[#ff3b7f] rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-pulse"></div>
+        <div class="absolute bottom-0 left-0 w-40 sm:w-64 md:w-80 h-40 sm:h-64 md:h-80 bg-[#00f7f6] rounded-full mix-blend-multiply filter blur-[90px] opacity-20"></div>
     </section>
 
     <!-- ========== ПОЧЕМУ МЫ ========== -->
-    <section class="py-20 px-4 border-y border-[#ff3b7f]/30" style="background: #0f1116;">
+    <section class="py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 lg:px-12 border-y border-[#ff3b7f]/30" style="background: #0f1116;">
         <div class="container max-w-6xl mx-auto">
-            <h2 class="text-4xl md:text-5xl font-black uppercase text-center mb-4 tracking-tight"><span class="neon-pink">ПОЧЕМУ</span> <span class="text-white">VSAI?</span></h2>
-            <p class="text-xl text-[#ffe600] text-center max-w-2xl mx-auto border-b-2 border-[#ffe600] pb-4 mb-16 font-medium">10 000+ риелторов уже в деле</p>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-center mb-4 tracking-tight"><span class="neon-pink">ПОЧЕМУ</span> <span class="text-white">VSAI?</span></h2>
+            <p class="text-lg sm:text-xl text-[#ffe600] text-center max-w-2xl mx-auto border-b-2 border-[#ffe600] pb-4 mb-10 sm:mb-16 font-medium px-4">10 000+ риелторов уже в деле</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
                 <div class="print-card p-6 text-center border-t-4 border-t-[#ff3b7f]">
                     <span class="text-4xl mb-3 inline-block">💰</span>
                     <h3 class="text-lg font-bold text-white">$9/ФОТО</h3>
@@ -287,11 +437,11 @@
     </section>
 
     <!-- ========== ГАЛЕРЕЯ ========== -->
-    <section id="gallery" class="py-20 px-4 scroll-mt-20" style="background: #0b0d10;">
+    <section id="gallery" class="py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 lg:px-12 scroll-mt-20" style="background: #0b0d10;">
         <div class="container max-w-6xl mx-auto">
-            <h2 class="text-4xl md:text-5xl font-black uppercase text-center mb-4"><span class="neon-cyan">ДО</span> <span style="color:#ffe600;">/</span> <span class="neon-pink">ПОСЛЕ</span></h2>
-            <p class="text-center text-white/70 text-xl mb-16 max-w-3xl mx-auto">реальные объекты, обработаны за секунды</p>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-center mb-4"><span class="neon-cyan">ДО</span> <span style="color:#ffe600;">/</span> <span class="neon-pink">ПОСЛЕ</span></h2>
+            <p class="text-center text-white/70 text-lg sm:text-xl mb-10 sm:mb-16 max-w-3xl mx-auto px-4">реальные объекты, обработаны за секунды</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 <div class="print-card bg-[#0f1219] p-0 border-2 border-[#ffe600] shadow-[10px_10px_0_#ff3b7f]">
                     <div class="h-56 overflow-hidden border-b-2 border-[#ffe600]">
                         <img src="https://images.unsplash.com/photo-1600210492493-0946911123ea?w=800&auto=format&fit=crop" class="w-full h-full object-cover">
@@ -326,11 +476,11 @@
     </section>
 
     <!-- ========== СТИЛИ ========== -->
-    <section id="styles" class="py-20 px-4 scroll-mt-20 border-y border-[#00f7f6]/30" style="background: #0e1015;">
+    <section id="styles" class="py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 lg:px-12 scroll-mt-20 border-y border-[#00f7f6]/30" style="background: #0e1015;">
         <div class="container max-w-6xl mx-auto">
-            <h2 class="text-4xl md:text-5xl font-black uppercase text-center"><span class="text-[#ffe600]">∞</span> СТИЛИ <span class="text-[#ffe600]">∞</span></h2>
-            <p class="text-[#ff3b7f] text-center text-xl font-bold mb-16">одна комната — 8 вариантов</p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-center"><span class="text-[#ffe600]">∞</span> СТИЛИ <span class="text-[#ffe600]">∞</span></h2>
+            <p class="text-[#ff3b7f] text-center text-lg sm:text-xl font-bold mb-10 sm:mb-16 px-4">одна комната — 8 вариантов</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                 <div class="border-2 border-transparent hover:border-[#ff3b7f] bg-[#1a1d24] p-6 text-center transition">
                     <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-gray-500 to-gray-700 rotate-12 shadow-[5px_5px_0_#ffe600]"></div>
                     <h4 class="text-[#ffe600] font-bold">БАЗОВЫЙ</h4>
@@ -352,89 +502,97 @@
     </section>
 
     <!-- ========== СТАТИСТИКА ========== -->
-    <section class="py-20 px-4" style="background: #0b0d10;">
+    <section class="py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 lg:px-12" style="background: #0b0d10;">
         <div class="container max-w-5xl mx-auto text-center">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-                <div><span class="stat-num">83%</span><p class="text-white text-xl font-light mt-2">покупателей видят потенциал</p></div>
-                <div><span class="stat-num">2X</span><p class="text-white text-xl font-light mt-2">быстрее продажа</p></div>
-                <div><span class="stat-num">17%</span><p class="text-white text-xl font-light mt-2">выше цена</p></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
+                <div><span class="stat-num text-4xl sm:text-5xl md:text-6xl lg:text-7xl">83%</span><p class="text-white text-lg sm:text-xl font-light mt-2 px-4">покупателей видят потенциал</p></div>
+                <div><span class="stat-num text-4xl sm:text-5xl md:text-6xl lg:text-7xl">2X</span><p class="text-white text-lg sm:text-xl font-light mt-2 px-4">быстрее продажа</p></div>
+                <div><span class="stat-num text-4xl sm:text-5xl md:text-6xl lg:text-7xl">17%</span><p class="text-white text-lg sm:text-xl font-light mt-2 px-4">выше цена</p></div>
             </div>
-            <p class="text-2xl text-white/80 max-w-3xl mx-auto mt-16 border-t-2 border-[#ff3b7f] pt-10">10 000+ агентов. Хватит продавать пустые коробки.</p>
-            <a href="#" class="btn-cyan inline-block mt-10 px-14 py-5 text-lg">ЗАСТАЙЛИРОВАТЬ</a>
+            <p class="text-lg sm:text-xl md:text-2xl text-white/80 max-w-3xl mx-auto mt-10 sm:mt-16 border-t-2 border-[#ff3b7f] pt-6 sm:pt-10 px-4">10 000+ агентов. Хватит продавать пустые коробки.</p>
+            <% if user_signed_in? %>
+                <%= link_to dashboard_path, class: "btn-cyan inline-block mt-6 sm:mt-10 px-8 sm:px-12 md:px-14 py-3 sm:py-4 md:py-5 text-base sm:text-lg min-h-[44px]" do %>
+                    ЗАСТАЙЛИРОВАТЬ
+                <% end %>
+            <% else %>
+                <%= link_to new_user_registration_path, class: "btn-cyan inline-block mt-6 sm:mt-10 px-8 sm:px-12 md:px-14 py-3 sm:py-4 md:py-5 text-base sm:text-lg min-h-[44px]" do %>
+                    ЗАСТАЙЛИРОВАТЬ
+                <% end %>
+            <% end %>
         </div>
     </section>
 
     <!-- ========== MULTI-VIEW ========== -->
-    <section class="py-20 px-4" style="background: #0e1117;">
-        <div class="container max-w-6xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
+    <section class="py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 lg:px-12" style="background: #0e1117;">
+        <div class="container max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-14 items-center">
             <div>
-                <span class="text-[#00f7f6] text-sm border border-[#00f7f6] px-4 py-2 tracking-[.25em]">НОВОЕ — СКВОЗНОЙ СТАЙЛИНГ</span>
-                <h2 class="text-5xl font-black uppercase my-6"><span class="neon-pink">ОДНА</span> <span class="text-white">МЕБЕЛЬ</span><br/><span class="neon-cyan">ВО ВСЕХ КОМНАТАХ</span></h2>
-                <div class="space-y-5">
-                    <div class="flex items-center gap-4"><span class="text-[#ffe600] text-3xl">▹</span><span class="text-xl">единый дизайн-код</span></div>
-                    <div class="flex items-center gap-4"><span class="text-[#ffe600] text-3xl">▹</span><span class="text-xl">экономия 50% против покадрового</span></div>
+                <span class="text-[#00f7f6] text-xs sm:text-sm border border-[#00f7f6] px-3 sm:px-4 py-1.5 sm:py-2 tracking-[.25em] inline-block mb-4">НОВОЕ — СКВОЗНОЙ СТАЙЛИНГ</span>
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-black uppercase my-4 sm:my-6"><span class="neon-pink">ОДНА</span> <span class="text-white">МЕБЕЛЬ</span><br/><span class="neon-cyan">ВО ВСЕХ КОМНАТАХ</span></h2>
+                <div class="space-y-4 sm:space-y-5">
+                    <div class="flex items-center gap-3 sm:gap-4"><span class="text-[#ffe600] text-2xl sm:text-3xl">▹</span><span class="text-lg sm:text-xl">единый дизайн-код</span></div>
+                    <div class="flex items-center gap-3 sm:gap-4"><span class="text-[#ffe600] text-2xl sm:text-3xl">▹</span><span class="text-lg sm:text-xl">экономия 50% против покадрового</span></div>
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-4">
-                <img class="border-2 border-[#ff3b7f] shadow-[8px_8px_0_#00f7f6]" src="https://images.unsplash.com/photo-1630699372507-7da49d7c4fa1?w=600">
-                <img class="border-2 border-[#00f7f6] shadow-[8px_8px_0_#ffe600]" src="https://images.unsplash.com/photo-1618219904412-8dc3ecdb4ce3?w=600">
-                <img class="border-2 border-[#ffe600] shadow-[8px_8px_0_#ff3b7f]" src="https://images.unsplash.com/photo-1556909212-d5b604d0c90d?w=600">
-                <img class="border-2 border-[#ff3b7f] shadow-[8px_8px_0_#00f7f6]" src="https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=600">
+            <div class="grid grid-cols-2 gap-3 sm:gap-4 mt-6 lg:mt-0">
+                <img class="border-2 border-[#ff3b7f] shadow-[4px_4px_0_#00f7f6] sm:shadow-[8px_8px_0_#00f7f6] w-full h-auto object-cover" src="https://images.unsplash.com/photo-1630699372507-7da49d7c4fa1?w=600" alt="Интерьер 1">
+                <img class="border-2 border-[#00f7f6] shadow-[4px_4px_0_#ffe600] sm:shadow-[8px_8px_0_#ffe600] w-full h-auto object-cover" src="https://images.unsplash.com/photo-1618219904412-8dc3ecdb4ce3?w=600" alt="Интерьер 2">
+                <img class="border-2 border-[#ffe600] shadow-[4px_4px_0_#ff3b7f] sm:shadow-[8px_8px_0_#ff3b7f] w-full h-auto object-cover" src="https://images.unsplash.com/photo-1556909212-d5b604d0c90d?w=600" alt="Интерьер 3">
+                <img class="border-2 border-[#ff3b7f] shadow-[4px_4px_0_#00f7f6] sm:shadow-[8px_8px_0_#00f7f6] w-full h-auto object-cover" src="https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=600" alt="Интерьер 4">
             </div>
         </div>
     </section>
 
     <!-- ========== КАК РАБОТАЕТ ========== -->
-    <section id="how" class="py-20 px-4 scroll-mt-20" style="background: #0b0d10;">
+    <section id="how" class="py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 lg:px-12 scroll-mt-20" style="background: #0b0d10;">
         <div class="container max-w-5xl mx-auto">
-            <h2 class="text-5xl font-black uppercase text-center neon-pink">АЛГОРИТМ</h2>
-            <p class="text-[#ffe600] text-center text-2xl font-bold mb-16">ТРИ ШАГА</p>
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="print-card p-8 text-center border-b-4 border-b-[#ffe600]">
-                    <span class="text-6xl block mb-4">📤</span>
-                    <h3 class="text-2xl font-bold text-[#00f7f6]">1. ЗАГРУЗКА</h3>
-                    <p class="text-white/60">пустая, заставленная — неважно</p>
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-black uppercase text-center neon-pink">АЛГОРИТМ</h2>
+            <p class="text-[#ffe600] text-center text-xl sm:text-2xl font-bold mb-10 sm:mb-16 px-4">ТРИ ШАГА</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+                <div class="print-card p-6 sm:p-8 text-center border-b-4 border-b-[#ffe600]">
+                    <span class="text-4xl sm:text-5xl md:text-6xl block mb-3 sm:mb-4">📤</span>
+                    <h3 class="text-xl sm:text-2xl font-bold text-[#00f7f6]">1. ЗАГРУЗКА</h3>
+                    <p class="text-white/60 text-sm sm:text-base">пустая, заставленная — неважно</p>
                 </div>
-                <div class="print-card p-8 text-center border-b-4 border-b-[#ff3b7f]">
-                    <span class="text-6xl block mb-4">🧠</span>
-                    <h3 class="text-2xl font-bold text-[#ffe600]">2. ОБРАБОТКА</h3>
-                    <p class="text-white/60">~15 секунд, 8 стилей</p>
+                <div class="print-card p-6 sm:p-8 text-center border-b-4 border-b-[#ff3b7f]">
+                    <span class="text-4xl sm:text-5xl md:text-6xl block mb-3 sm:mb-4">🧠</span>
+                    <h3 class="text-xl sm:text-2xl font-bold text-[#ffe600]">2. ОБРАБОТКА</h3>
+                    <p class="text-white/60 text-sm sm:text-base">~15 секунд, 8 стилей</p>
                 </div>
-                <div class="print-card p-8 text-center border-b-4 border-b-[#00f7f6]">
-                    <span class="text-6xl block mb-4">⬇️</span>
-                    <h3 class="text-2xl font-bold text-[#ff3b7f]">3. ГОТОВО</h3>
-                    <p class="text-white/60">MLS, соцсети, высокое разрешение</p>
+                <div class="print-card p-6 sm:p-8 text-center border-b-4 border-b-[#00f7f6]">
+                    <span class="text-4xl sm:text-5xl md:text-6xl block mb-3 sm:mb-4">⬇️</span>
+                    <h3 class="text-xl sm:text-2xl font-bold text-[#ff3b7f]">3. ГОТОВО</h3>
+                    <p class="text-white/60 text-sm sm:text-base">MLS, соцсети, высокое разрешение</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- ========== СРАВНЕНИЕ ========== -->
-    <section class="py-20 px-4 border-t border-[#ff3b7f]" style="background: #0f1116;">
+    <section class="py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 lg:px-12 border-t border-[#ff3b7f]" style="background: #0f1116;">
         <div class="container max-w-5xl mx-auto">
-            <h2 class="text-4xl font-black uppercase text-center text-white">ПРОТИВ ОБЫЧНОГО СТАЙЛИНГА</h2>
-            <div class="grid md:grid-cols-2 gap-10 mt-16">
-                <div><span class="text-[#ffe600] text-2xl mr-3">⚡</span> <span class="text-xl font-bold text-white">15 секунд против недель</span></div>
-                <div><span class="text-[#ffe600] text-2xl mr-3">💰</span> <span class="text-xl font-bold text-white">дешевле на 90%</span></div>
-                <div><span class="text-[#ffe600] text-2xl mr-3">🔄</span> <span class="text-xl font-bold text-white">сколько угодно попыток</span></div>
-                <div><span class="text-[#ffe600] text-2xl mr-3">🤖</span> <span class="text-xl font-bold text-white">1 млн+ интерьеров в обучении</span></div>
+            <h2 class="text-3xl sm:text-4xl font-black uppercase text-center text-white px-4">ПРОТИВ ОБЫЧНОГО СТАЙЛИНГА</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 mt-10 sm:mt-16">
+                <div class="flex items-center"><span class="text-[#ffe600] text-xl sm:text-2xl mr-2 sm:mr-3">⚡</span> <span class="text-lg sm:text-xl font-bold text-white">15 секунд против недель</span></div>
+                <div class="flex items-center"><span class="text-[#ffe600] text-xl sm:text-2xl mr-2 sm:mr-3">💰</span> <span class="text-lg sm:text-xl font-bold text-white">дешевле на 90%</span></div>
+                <div class="flex items-center"><span class="text-[#ffe600] text-xl sm:text-2xl mr-2 sm:mr-3">🔄</span> <span class="text-lg sm:text-xl font-bold text-white">сколько угодно попыток</span></div>
+                <div class="flex items-center"><span class="text-[#ffe600] text-xl sm:text-2xl mr-2 sm:mr-3">🤖</span> <span class="text-lg sm:text-xl font-bold text-white">1 млн+ интерьеров в обучении</span></div>
             </div>
         </div>
     </section>
 
     <!-- ========== ТАРИФНЫЕ ПЛАНЫ VSAI ========== -->
-    <section id="pricing" class="py-20 px-4 scroll-mt-20" style="background: var(--chrome);">
+    <section id="pricing" class="py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-8 lg:px-12 scroll-mt-20" style="background: var(--chrome);">
         <div class="container mx-auto max-w-6xl">
             <!-- Заголовок -->
-            <div class="text-center mb-16">
-                <h2 class="text-5xl md:text-6xl font-black uppercase mb-4">
+            <div class="text-center mb-10 sm:mb-16">
+                <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase mb-4 px-4">
                     <span class="neon-pink">ТАРИФЫ</span> 
                     <span class="text-white">VSAI</span>
                 </h2>
-                <p class="text-xl text-[#ffe600] max-w-2xl mx-auto border-b-2 border-[#ffe600] pb-4 font-medium">
+                <p class="text-lg sm:text-xl text-[#ffe600] max-w-2xl mx-auto border-b-2 border-[#ffe600] pb-4 font-medium px-4">
                     Выбери свой пакет токенов
                 </p>
-                <div class="flex justify-center mt-6 space-x-4 text-white/60 text-sm flex-wrap gap-4">
+                <div class="flex justify-center mt-4 sm:mt-6 space-x-3 sm:space-x-4 text-white/60 text-xs sm:text-sm flex-wrap gap-3 sm:gap-4 px-4">
                     <span class="flex items-center"><span class="w-2 h-2 bg-[#ff3b7f] mr-2"></span> Без подписок</span>
                     <span class="flex items-center"><span class="w-2 h-2 bg-[#00f7f6] mr-2"></span> Токены не сгорают</span>
                     <span class="flex items-center"><span class="w-2 h-2 bg-[#ffe600] mr-2"></span> Мгновенная активация</span>
@@ -442,7 +600,7 @@
             </div>
 
             <!-- Сетка тарифов -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <% 
                   # Маппинг стилей для тарифов
                   package_styles = {
@@ -511,69 +669,69 @@
                       price_per_token_formatted = sprintf("%.2f", price_per_token / 100.0)
                     %>
                     
-                    <div class="print-card p-6 <%= style[:border_hover] %> transition-all duration-300 <%= 'relative' if style[:is_popular] %>">
+                    <div class="print-card p-4 sm:p-6 <%= style[:border_hover] %> transition-all duration-300 <%= 'relative' if style[:is_popular] %>">
                         <% if style[:is_popular] %>
                             <!-- Бейдж популярного -->
-                            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-[#00f7f6] text-black px-6 py-1.5 text-xs font-bold uppercase whitespace-nowrap">
+                            <div class="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2 bg-[#00f7f6] text-black px-4 sm:px-6 py-1 sm:py-1.5 text-xs font-bold uppercase whitespace-nowrap">
                                 ПОПУЛЯРНЫЙ
                             </div>
                         <% end %>
                         
-                        <div class="<%= 'mt-4' if style[:is_popular] %> mb-6">
-                            <span class="text-4xl mb-2 block"><%= style[:icon] %></span>
-                            <h3 class="text-2xl font-bold text-white"><%= package.name %></h3>
-                            <div class="flex items-baseline mt-4">
+                        <div class="<%= 'mt-3 sm:mt-4' if style[:is_popular] %> mb-4 sm:mb-6">
+                            <span class="text-3xl sm:text-4xl mb-2 block"><%= style[:icon] %></span>
+                            <h3 class="text-xl sm:text-2xl font-bold text-white"><%= package.name %></h3>
+                            <div class="flex items-baseline mt-3 sm:mt-4">
                                 <% if style[:accent_class].present? %>
-                                    <span class="text-4xl font-bold <%= style[:accent_class] %>">$<%= price_dollars.to_i %></span>
+                                    <span class="text-3xl sm:text-4xl font-bold <%= style[:accent_class] %>">$<%= price_dollars.to_i %></span>
                                 <% else %>
-                                    <span class="text-4xl font-bold" style="color: var(--magenta); text-shadow: 0 0 8px var(--magenta), 0 0 20px rgba(199, 36, 177, 0.5);">$<%= price_dollars.to_i %></span>
+                                    <span class="text-3xl sm:text-4xl font-bold" style="color: var(--magenta); text-shadow: 0 0 8px var(--magenta), 0 0 20px rgba(199, 36, 177, 0.5);">$<%= price_dollars.to_i %></span>
                                 <% end %>
-                                <span class="text-white/40 ml-2">/пакет</span>
+                                <span class="text-white/40 ml-2 text-sm sm:text-base">/пакет</span>
                             </div>
                         </div>
                         
-                        <div class="space-y-3 mb-8">
+                        <div class="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
                             <div class="flex items-center">
-                                <span class="mr-3" style="color: <%= style[:bullet_color] %>;">▶</span>
-                                <span class="text-white/80"><span class="text-white font-bold"><%= package.tokens_amount %></span> токенов</span>
+                                <span class="mr-2 sm:mr-3 text-sm sm:text-base" style="color: <%= style[:bullet_color] %>;">▶</span>
+                                <span class="text-white/80 text-sm sm:text-base"><span class="text-white font-bold"><%= package.tokens_amount %></span> токенов</span>
                             </div>
                             <div class="flex items-center">
-                                <span class="mr-3" style="color: <%= style[:bullet_color] %>;">▶</span>
-                                <span class="text-white/80"><span class="text-white font-bold">~<%= package.tokens_amount %></span> фото</span>
+                                <span class="mr-2 sm:mr-3 text-sm sm:text-base" style="color: <%= style[:bullet_color] %>;">▶</span>
+                                <span class="text-white/80 text-sm sm:text-base"><span class="text-white font-bold">~<%= package.tokens_amount %></span> фото</span>
                             </div>
-                            <% style[:features].each do |feature| %>
+                            <% (style[:features] || []).each do |feature| %>
                                 <div class="flex items-center">
-                                    <span class="mr-3" style="color: <%= style[:bullet_color] %>;">▶</span>
-                                    <span class="text-white/80"><%= feature %></span>
+                                    <span class="mr-2 sm:mr-3 text-sm sm:text-base" style="color: <%= style[:bullet_color] %>;">▶</span>
+                                    <span class="text-white/80 text-sm sm:text-base"><%= feature %></span>
                                 </div>
                             <% end %>
-                            <% style[:disabled_features].each do |feature| %>
+                            <% (style[:disabled_features] || []).each do |feature| %>
                                 <div class="flex items-center opacity-50">
-                                    <span class="text-white/40 mr-3">▶</span>
-                                    <span class="text-white/40"><%= feature %></span>
+                                    <span class="text-white/40 mr-2 sm:mr-3 text-sm sm:text-base">▶</span>
+                                    <span class="text-white/40 text-sm sm:text-base"><%= feature %></span>
                                 </div>
                             <% end %>
                         </div>
                         
                         <% if style[:button_class].present? %>
-                            <a href="#" class="block w-full <%= style[:button_class] %> text-center py-4">
+                            <a href="#" class="block w-full <%= style[:button_class] %> text-center py-3 sm:py-4 text-sm sm:text-base min-h-[44px] flex items-center justify-center">
                                 КУПИТЬ
                             </a>
                         <% else %>
-                            <a href="#" class="block w-full bg-[#c724b1] text-white font-bold uppercase tracking-wider text-center py-4 shadow-[6px_6px_0_#ff3b7f] hover:shadow-[3px_3px_0_#ffe600] hover:translate-x-1 hover:translate-y-1 transition-all border-none" style="border-radius: 2px;">
+                            <a href="#" class="block w-full bg-[#c724b1] text-white font-bold uppercase tracking-wider text-center py-3 sm:py-4 text-sm sm:text-base shadow-[6px_6px_0_#ff3b7f] hover:shadow-[3px_3px_0_#ffe600] hover:translate-x-1 hover:translate-y-1 transition-all border-none min-h-[44px] flex items-center justify-center" style="border-radius: 2px;">
                                 КУПИТЬ
                             </a>
                         <% end %>
-                        <p class="text-center text-white/40 text-xs mt-4">$<%= price_per_token_formatted %> за токен</p>
+                        <p class="text-center text-white/40 text-xs mt-3 sm:mt-4">$<%= price_per_token_formatted %> за токен</p>
                     </div>
                 <% end %>
             </div>
 
             <!-- Дополнительная информация -->
-            <div class="mt-16 text-center">
-                <div class="inline-flex items-center space-x-3 print-card px-8 py-4">
-                    <span class="text-[#ffe600] text-2xl">⟁</span>
-                    <p class="text-white/80 text-sm">
+            <div class="mt-10 sm:mt-16 text-center px-4">
+                <div class="inline-flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3 print-card px-4 sm:px-6 md:px-8 py-4">
+                    <span class="text-[#ffe600] text-xl sm:text-2xl">⟁</span>
+                    <p class="text-white/80 text-xs sm:text-sm text-center sm:text-left">
                         <span class="text-white font-bold">Токены не сгорают</span> — используй когда удобно. 
                         Есть вопросы? <a href="#" class="text-[#00f7f6] underline underline-offset-4 hover:text-[#ff3b7f] transition-colors">Напиши в поддержку</a>
                     </p>
@@ -583,11 +741,11 @@
     </section>
 
     <!-- ========== ПОДВАЛ ========== -->
-    <footer class="bg-black py-12 px-4 border-t-4 border-[#ffe600]">
+    <footer class="bg-black py-8 sm:py-12 px-4 sm:px-6 md:px-8 lg:px-12 border-t-4 border-[#ffe600]">
         <div class="container max-w-6xl mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <span class="text-2xl font-black text-white">VSAI</span>
-                <span class="text-[#ff3b7f] text-sm">© 2024 — НЕЙРОСЕТЕВОЙ СТАЙЛИНГ</span>
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0">
+                <span class="text-xl sm:text-2xl font-black text-white">VSAI</span>
+                <span class="text-[#ff3b7f] text-xs sm:text-sm text-center md:text-right">© 2024 — НЕЙРОСЕТЕВОЙ СТАЙЛИНГ</span>
             </div>
         </div>
     </footer>
@@ -664,6 +822,53 @@
                             behavior: 'smooth'
                         });
                     }
+                }
+            });
+
+            // Мобильное меню
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenuClose = document.getElementById('mobile-menu-close');
+            const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+            const mobileMenuDrawer = document.getElementById('mobile-menu-drawer');
+            const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+            function openMobileMenu() {
+                mobileMenuBtn.classList.add('active');
+                mobileMenuOverlay.classList.add('active');
+                mobileMenuDrawer.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeMobileMenu() {
+                mobileMenuBtn.classList.remove('active');
+                mobileMenuOverlay.classList.remove('active');
+                mobileMenuDrawer.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', openMobileMenu);
+            }
+
+            if (mobileMenuClose) {
+                mobileMenuClose.addEventListener('click', closeMobileMenu);
+            }
+
+            if (mobileMenuOverlay) {
+                mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+            }
+
+            // Закрытие меню при клике на ссылку
+            mobileNavLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    setTimeout(closeMobileMenu, 300); // Небольшая задержка для плавной прокрутки
+                });
+            });
+
+            // Закрытие меню при нажатии Escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && mobileMenuDrawer.classList.contains('active')) {
+                    closeMobileMenu();
                 }
             });
         });

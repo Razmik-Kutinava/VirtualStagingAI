@@ -1,18 +1,18 @@
 <!-- Модальное окно для просмотра изображения -->
 <div id="image-modal-<%= @image.id %>" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto" style="background: rgba(3, 5, 10, 0.95); backdrop-filter: blur(8px);" onclick="if(event.target === this) closeImageModal(<%= @image.id %>)">
-  <div class="print-card w-full max-w-6xl mx-4 my-8" style="background: var(--panel-raise); border: 2px solid var(--accent-electric); max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation()">
+  <div class="print-card w-full max-w-[95vw] sm:max-w-6xl mx-2 sm:mx-4 my-2 sm:my-8" style="background: var(--panel-raise); border: 2px solid var(--accent-electric); max-height: 95vh; overflow-y: auto;" onclick="event.stopPropagation()">
     <!-- Заголовок -->
-    <div class="flex items-center justify-between px-6 py-4 border-b sticky top-0" style="background: var(--panel-raise); border-color: var(--border-sharp); z-index: 10;">
-      <h2 class="text-xl font-semibold uppercase tracking-tight neon-electric">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b sticky top-0" style="background: var(--panel-raise); border-color: var(--border-sharp); z-index: 10;">
+      <h2 class="text-base sm:text-lg md:text-xl font-semibold uppercase tracking-tight neon-electric truncate pr-2">
         <%= @image.folder&.name || @image.project&.name || "ИЗОБРАЖЕНИЕ" %>
       </h2>
-      <button onclick="closeImageModal(<%= @image.id %>)" class="text-3xl font-bold hover:text-[var(--accent-blue)] transition-colors" style="color: var(--text-muted);" aria-label="Закрыть">
+      <button onclick="closeImageModal(<%= @image.id %>)" class="text-2xl sm:text-3xl font-bold hover:text-[var(--accent-blue)] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" style="color: var(--text-muted);" aria-label="Закрыть">
         ×
       </button>
     </div>
 
-    <div class="p-6">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="p-4 sm:p-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <!-- Основное изображение -->
         <div class="lg:col-span-2">
           <div class="print-card p-4" style="background: var(--panel-deep);">
@@ -28,11 +28,11 @@
               <% end %>
             </div>
 
-            <div class="mt-4">
-              <h3 class="text-lg font-semibold uppercase mb-2 neon-electric">
+            <div class="mt-3 sm:mt-4">
+              <h3 class="text-base sm:text-lg font-semibold uppercase mb-2 neon-electric">
                 <%= @image.folder&.name || @image.project&.name || "БЕЗ НАЗВАНИЯ" %>
               </h3>
-              <p class="text-sm" style="color: var(--text-muted);">
+              <p class="text-xs sm:text-sm" style="color: var(--text-muted);">
                 Загружено <%= @image.created_at.strftime("%d %B %Y в %H:%M") %>
               </p>
             </div>
@@ -40,26 +40,26 @@
         </div>
 
         <!-- Sidebar с информацией и действиями -->
-        <div class="space-y-4">
+        <div class="space-y-3 sm:space-y-4 mt-4 lg:mt-0">
           <!-- Информация -->
-          <div class="print-card p-4" style="background: var(--panel-deep);">
-            <h3 class="text-sm font-semibold uppercase mb-3 neon-electric">ИНФОРМАЦИЯ</h3>
-            <div class="space-y-3">
+          <div class="print-card p-3 sm:p-4" style="background: var(--panel-deep);">
+            <h3 class="text-xs sm:text-sm font-semibold uppercase mb-2 sm:mb-3 neon-electric">ИНФОРМАЦИЯ</h3>
+            <div class="space-y-2 sm:space-y-3">
               <div>
                 <span class="text-xs uppercase block mb-1" style="color: var(--text-muted);">Папка:</span>
-                <p class="text-sm font-semibold" style="color: var(--text-primary);">
+                <p class="text-xs sm:text-sm font-semibold" style="color: var(--text-primary);">
                   <%= @image.folder&.name || "Не указана" %>
                 </p>
               </div>
               <div>
                 <span class="text-xs uppercase block mb-1" style="color: var(--text-muted);">Проект:</span>
-                <p class="text-sm font-semibold" style="color: var(--text-primary);">
+                <p class="text-xs sm:text-sm font-semibold" style="color: var(--text-primary);">
                   <%= @image.project&.name || "Не указан" %>
                 </p>
               </div>
               <div>
                 <span class="text-xs uppercase block mb-1" style="color: var(--text-muted);">Стилей создано:</span>
-                <p class="text-sm font-semibold neon-electric">
+                <p class="text-xs sm:text-sm font-semibold neon-electric">
                   <%= @image.styles_count %>
                 </p>
               </div>
@@ -67,28 +67,28 @@
           </div>
 
           <!-- Действия -->
-          <div class="print-card p-4" style="background: var(--panel-deep);">
-            <h3 class="text-sm font-semibold uppercase mb-3 neon-electric">ДЕЙСТВИЯ</h3>
+          <div class="print-card p-3 sm:p-4" style="background: var(--panel-deep);">
+            <h3 class="text-xs sm:text-sm font-semibold uppercase mb-2 sm:mb-3 neon-electric">ДЕЙСТВИЯ</h3>
             <div class="space-y-2">
               <% if @image.deleted_at.nil? %>
                 <!-- Кнопка удаления (если не в корзине) -->
                 <%= form_with url: soft_delete_image_path(@image), method: :patch, local: true, data: { turbo: false }, class: "w-full", onsubmit: "handleImageDelete(event, #{@image.id})" do |f| %>
                   <%= f.submit "🗑️ УДАЛИТЬ", 
-                      class: "w-full px-4 py-2 text-xs font-semibold uppercase transition-all",
+                      class: "w-full px-4 py-2.5 sm:py-2 text-xs font-semibold uppercase transition-all min-h-[44px] flex items-center justify-center",
                       style: "background: var(--accent-blue); color: var(--text-primary); border-radius: 0;",
                       onclick: "return confirm('Переместить в корзину?');" %>
                 <% end %>
               <% else %>
                 <!-- Кнопки для корзины -->
                 <%= button_to restore_image_path(@image), method: :patch,
-                    class: "w-full px-4 py-2 text-xs font-semibold uppercase transition-all",
+                    class: "w-full px-4 py-2.5 sm:py-2 text-xs font-semibold uppercase transition-all min-h-[44px] flex items-center justify-center",
                     style: "background: var(--accent-electric); color: var(--ink); border-radius: 0;",
                     data: { turbo_method: :patch },
                     onclick: "handleImageRestore(event, #{@image.id})" do %>
                   ↻ ВОССТАНОВИТЬ
                 <% end %>
                 <%= button_to image_path(@image), method: :delete,
-                    class: "w-full px-4 py-2 text-xs font-semibold uppercase transition-all mt-2",
+                    class: "w-full px-4 py-2.5 sm:py-2 text-xs font-semibold uppercase transition-all mt-2 min-h-[44px] flex items-center justify-center",
                     style: "background: var(--accent-blue); color: var(--text-primary); border-radius: 0;",
                     data: { turbo_method: :delete },
                     onclick: "return confirm('Удалить навсегда? Это действие нельзя отменить.');" do %>
@@ -99,26 +99,27 @@
           </div>
 
           <!-- Создать стиль -->
-          <div class="print-card p-4" style="background: var(--panel-deep);">
-            <h3 class="text-sm font-semibold uppercase mb-3 neon-electric">СОЗДАТЬ СТИЛЬ</h3>
-            <p class="text-xs mb-3" style="color: var(--text-muted);">
+          <div class="print-card p-3 sm:p-4" style="background: var(--panel-deep);">
+            <h3 class="text-xs sm:text-sm font-semibold uppercase mb-2 sm:mb-3 neon-electric">СОЗДАТЬ СТИЛЬ</h3>
+            <p class="text-xs mb-2 sm:mb-3" style="color: var(--text-muted);">
               Выберите стиль для генерации виртуального стайлинга
             </p>
-            <%= link_to "#", class: "w-full px-4 py-2 text-xs font-semibold uppercase text-center block transition-all", 
-                style: "background: var(--accent-electric); color: var(--ink); border-radius: 0;",
-                data: { turbo: false } do %>
+            <button 
+              onclick="openStyleSelectionModal(<%= @image.id %>)" 
+              class="w-full px-4 py-2.5 sm:py-2 text-xs font-semibold uppercase text-center transition-all min-h-[44px] flex items-center justify-center"
+              style="background: var(--accent-electric); color: var(--ink); border-radius: 0; border: none; cursor: pointer;">
               ВЫБРАТЬ СТИЛЬ
-            <% end %>
+            </button>
           </div>
 
           <!-- Сгенерированные стили -->
           <% if @generations.any? %>
-            <div class="print-card p-4" style="background: var(--panel-deep);">
-              <h3 class="text-sm font-semibold uppercase mb-3 neon-electric">СГЕНЕРИРОВАННЫЕ СТИЛИ</h3>
+            <div class="print-card p-3 sm:p-4" style="background: var(--panel-deep);">
+              <h3 class="text-xs sm:text-sm font-semibold uppercase mb-2 sm:mb-3 neon-electric">СГЕНЕРИРОВАННЫЕ СТИЛИ</h3>
               <div class="space-y-2">
                 <% @generations.each do |generation| %>
-                  <div class="p-3 border" style="background: var(--panel-raise); border-color: var(--border-sharp);">
-                    <div class="flex items-center justify-between mb-2">
+                  <div class="p-2 sm:p-3 border" style="background: var(--panel-raise); border-color: var(--border-sharp);">
+                    <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
                       <span class="text-xs font-semibold" style="color: var(--text-primary);">
                         <%= generation.style.name %>
                       </span>
@@ -128,7 +129,7 @@
                     </div>
                     <% if generation.output_image&.file&.attached? %>
                       <div class="block mt-2">
-                        <%= image_tag generation.output_image.file, class: "w-full h-24 object-cover" %>
+                        <%= image_tag generation.output_image.file, class: "w-full h-20 sm:h-24 object-cover" %>
                       </div>
                     <% end %>
                   </div>
@@ -174,9 +175,32 @@
     return true;
   }
 
+  // Убеждаемся, что функция openStyleSelectionModal доступна
+  if (typeof window.openStyleSelectionModal === 'undefined') {
+    console.warn('openStyleSelectionModal not found, defining fallback');
+    window.openStyleSelectionModal = function(imageId) {
+      console.log('Fallback openStyleSelectionModal called for image:', imageId);
+      const stylePath = '/images/' + imageId + '/style_selection';
+      window.location.href = stylePath;
+    };
+  }
+
   // Закрытие по Escape
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
+      // Сначала закрываем модалки выбора стилей
+      const styleModals = document.querySelectorAll('[id^="style-selection-modal-"]');
+      if (styleModals.length > 0) {
+        styleModals.forEach(modal => {
+          const imageId = modal.id.replace('style-selection-modal-', '');
+          if (typeof window.closeStyleModal === 'function') {
+            window.closeStyleModal(imageId);
+          }
+        });
+        return;
+      }
+      
+      // Затем закрываем модалки изображений
       const modals = document.querySelectorAll('[id^="image-modal-"]');
       modals.forEach(modal => {
         const imageId = modal.id.replace('image-modal-', '');

@@ -217,13 +217,227 @@
             color: var(--accent-electric);
             background: rgba(0,224,255,0.05);
         }
+
+        /* Dropdown меню аккаунта должно быть поверх всех элементов */
+        [data-controller="dropdown"] {
+            position: relative;
+            z-index: 10000 !important;
+        }
+
+        [data-dropdown-target="menu"] {
+            z-index: 99999 !important;
+            position: absolute !important;
+        }
+
+        /* Убеждаемся, что карточки изображений не создают новый контекст наложения */
+        .print-card[id^="image_"] {
+            isolation: isolate;
+            z-index: auto;
+        }
+
+        /* Мобильное меню для sidebar */
+        .mobile-sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(3, 5, 10, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .mobile-sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-sidebar-drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            max-width: 85vw;
+            height: 100%;
+            background: var(--panel-deep);
+            border-right: 1px solid var(--border-sharp);
+            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .mobile-sidebar-drawer.active {
+            transform: translateX(0);
+        }
+
+        .hamburger-btn-dash {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            z-index: 10001;
+        }
+
+        .hamburger-btn-dash span {
+            width: 100%;
+            height: 3px;
+            background: var(--accent-electric);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 4px var(--accent-electric);
+        }
+
+        .hamburger-btn-dash.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger-btn-dash.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-btn-dash.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(8px, -8px);
+        }
+
+        @media (min-width: 1024px) {
+            .hamburger-btn-dash {
+                display: none;
+            }
+        }
     </style>
 <% end %>
 
+
 <div class="flex h-screen overflow-hidden">
     
-    <!-- ========== ЛЕВАЯ НАВИГАЦИЯ ========== -->
-    <aside class="w-80 flex-shrink-0 print-card border-r flex flex-col" style="background: var(--panel-deep); border-right: 1px solid var(--border-sharp);">
+    <!-- Мобильное меню overlay -->
+    <div class="mobile-sidebar-overlay" id="mobile-sidebar-overlay"></div>
+
+    <!-- Мобильное меню drawer -->
+    <div class="mobile-sidebar-drawer" id="mobile-sidebar-drawer">
+        <div class="flex items-center justify-between px-5 py-6 border-b" style="border-color: var(--border-sharp);">
+            <div class="flex items-center space-x-3">
+                <%= link_to root_path, class: "flex items-center space-x-3" do %>
+                    <div class="w-8 h-8 bg-[var(--accent-electric)] rotate-12" style="box-shadow: 4px 4px 0 var(--accent-blue);"></div>
+                    <span class="text-2xl font-semibold text-white tracking-tight neon-electric">VSAI</span>
+                <% end %>
+            </div>
+            <button class="hamburger-btn-dash active" id="mobile-sidebar-close" aria-label="Закрыть меню">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+        <!-- Копируем навигацию из sidebar -->
+        <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+            <%= link_to dashboard_path(folder: "all"), 
+                class: "dash-nav-item flex items-center px-3 py-2.5 font-medium #{'active' if @folder == 'all'} mobile-nav-link",
+                style: "color: var(--text-primary);" do %>
+                <span class="text-lg mr-2 flex-shrink-0" style="color: var(--accent-electric);">⬜</span>
+                <span class="flex-1">Все фото</span>
+                <span class="text-xs badge-d3 flex-shrink-0" style="min-width: 28px; text-align: center; margin-left: auto;"><%= @total_photos %></span>
+            <% end %>
+            
+            <%= link_to dashboard_path(folder: "unfiled"), 
+                class: "dash-nav-item flex items-center px-3 py-2.5 #{'active' if @folder == 'unfiled'} mobile-nav-link",
+                style: "color: var(--text-secondary);" do %>
+                <span class="text-lg mr-2 flex-shrink-0" style="color: var(--accent-electric);">🖼️</span>
+                <span class="flex-1">Без папки</span>
+                <span class="text-xs badge-d3 flex-shrink-0" style="min-width: 28px; text-align: center; margin-left: auto;"><%= @unfiled_count %></span>
+            <% end %>
+            
+            <%= link_to dashboard_path(folder: "trash"), 
+                class: "dash-nav-item flex items-center px-3 py-2.5 #{'active' if @folder == 'trash'} mobile-nav-link",
+                style: "color: var(--text-secondary);" do %>
+                <span class="text-lg mr-2 flex-shrink-0" style="color: var(--accent-electric);">🗑️</span>
+                <span class="flex-1">Корзина</span>
+                <span class="text-xs badge-d3 flex-shrink-0" style="min-width: 28px; text-align: center; margin-left: auto;"><%= @trash_count %></span>
+            <% end %>
+        
+        <!-- Категории комнат -->
+        <div class="pt-6 mt-6 border-t" style="border-color: var(--border-sharp);">
+            <div class="px-4 py-2 text-xs font-semibold uppercase tracking-wider mb-2" style="color: var(--text-muted); letter-spacing: 1px;">КОМНАТЫ</div>
+            <div class="space-y-1">
+                <% @room_categories.each do |category| %>
+                    <%= link_to dashboard_path(folder: category[:slug]), 
+                        class: "dash-nav-item flex items-center px-3 py-2.5 #{'active' if @folder == category[:slug]} mobile-nav-link",
+                        style: "color: var(--text-secondary);",
+                        data: { turbo_frame: "photos-grid" } do %>
+                        <span class="text-lg mr-2 flex-shrink-0"><%= category[:icon] %></span>
+                        <span class="font-medium flex-1 text-sm"><%= category[:name] %></span>
+                        <span class="text-xs badge-d3 flex-shrink-0" style="min-width: 28px; text-align: center; margin-left: auto;"><%= category[:count] %></span>
+                    <% end %>
+                <% end %>
+            </div>
+        </div>
+        
+        <!-- Проекты (только для оплативших) -->
+        <% if @has_paid %>
+        <div class="pt-6 mt-6 border-t" style="border-color: var(--border-sharp);">
+            <div class="px-4 py-2 text-xs font-semibold uppercase tracking-wider mb-2 flex items-center justify-between" style="color: var(--text-muted); letter-spacing: 1px;">
+                <span>ПРОЕКТЫ</span>
+                <button onclick="openProjectModal()" class="text-[var(--accent-electric)] hover:text-[var(--accent-blue)] transition-colors cursor-pointer" title="Создать проект">
+                    <span class="text-lg">+</span>
+                </button>
+            </div>
+            <% if @projects.any? %>
+                <div class="space-y-1">
+                    <% @projects.each do |project| %>
+                        <% project_images_count = current_user.images.input.not_deleted.where(project_id: project.id).count %>
+                            <div class="group relative">
+                                <div class="dash-nav-item flex items-center px-3 py-2.5 cursor-pointer mobile-nav-link" 
+                                     style="color: var(--text-secondary);"
+                                     onclick="toggleProjectFolders(this.closest('.group'))">
+                                    <span class="text-lg mr-2 flex-shrink-0" style="color: var(--accent-blue);">📁</span>
+                                    <span class="font-medium flex-1 truncate text-sm"><%= project.name %></span>
+                                    <span class="text-xs badge-d3 flex-shrink-0" style="min-width: 28px; text-align: center; margin-left: auto;"><%= project_images_count %></span>
+                                </div>
+                            <div class="hidden pl-4 space-y-1" id="project-<%= project.id %>-folders">
+                                <% project.folders.ordered.each do |folder| %>
+                                    <% folder_count = current_user.images.input.not_deleted.where(folder_id: folder.id).count %>
+                                    <%= link_to dashboard_path(folder: folder.id.to_s), 
+                                        class: "dash-nav-item flex items-center px-3 py-2 #{'active' if @folder == folder.id.to_s} mobile-nav-link",
+                                        style: "color: var(--text-muted); font-size: 0.875rem;",
+                                        data: { turbo_frame: "photos-grid" } do %>
+                                        <span class="text-base mr-2 flex-shrink-0"><%= folder.icon || "📄" %></span>
+                                        <span class="font-medium flex-1 truncate text-sm"><%= folder.name %></span>
+                                        <span class="text-xs badge-d3 flex-shrink-0" style="min-width: 28px; text-align: center; margin-left: auto;"><%= folder_count %></span>
+                                    <% end %>
+                                <% end %>
+                            </div>
+                        </div>
+                    <% end %>
+                </div>
+            <% else %>
+                <div class="px-4 py-3 text-sm" style="color: var(--text-muted);">
+                    <p>Нет проектов. Создайте первый проект, нажав на кнопку "+" выше.</p>
+                </div>
+            <% end %>
+        </div>
+        <% end %>
+        </nav>
+        <!-- БАЛАНС -->
+        <div class="px-5 py-6 border-t" style="border-color: var(--border-sharp);">
+            <div class="text-xs font-semibold uppercase tracking-wider mb-3" style="color: var(--text-muted); letter-spacing: 1px;">БАЛАНС</div>
+            <div class="text-2xl font-bold neon-electric mb-4"><%= @token_balance %></div>
+            <%= link_to "#", class: "btn-outlined block text-center py-2.5 text-xs min-h-[44px] flex items-center justify-center" do %>
+                ПОПОЛНИТЬ
+            <% end %>
+        </div>
+    </div>
+    
+    <!-- ========== ЛЕВАЯ НАВИГАЦИЯ (десктоп) ========== -->
+    <aside class="hidden lg:flex w-64 xl:w-80 flex-shrink-0 print-card border-r flex flex-col" style="background: var(--panel-deep); border-right: 1px solid var(--border-sharp);">
         <!-- логотип -->
         <div class="flex items-center space-x-3 px-5 py-6 border-b" style="border-color: var(--border-sharp);">
             <%= link_to root_path, class: "flex items-center space-x-3" do %>
@@ -275,7 +489,8 @@
                 </div>
             </div>
             
-            <!-- Проекты -->
+            <!-- Проекты (только для оплативших) -->
+            <% if @has_paid %>
             <div class="pt-6 mt-6 border-t" style="border-color: var(--border-sharp);">
                 <div class="px-4 py-2 text-xs font-semibold uppercase tracking-wider mb-2 flex items-center justify-between" style="color: var(--text-muted); letter-spacing: 1px;">
                     <span>ПРОЕКТЫ</span>
@@ -329,6 +544,7 @@
                     </div>
                 <% end %>
             </div>
+            <% end %>
             
             <!-- Все папки (если нужно показать отдельно) -->
             <% if @folders.any? && false %>
@@ -361,7 +577,7 @@
                     <% balance_percent = [(@token_balance.to_f / 1000 * 100).round, 100].min %>
                     <div class="progress-fill" style="width: <%= balance_percent %>%;"></div>
                 </div>
-                <%= link_to "#", class: "btn-flash text-xs py-2 px-3 w-full text-center block" do %>
+                <%= link_to "#", onclick: "openReplenishModal(); return false;", class: "btn-flash text-xs py-2 px-3 w-full text-center block" do %>
                     Пополнить
                 <% end %>
             </div>
@@ -372,8 +588,15 @@
     <div class="flex-1 flex flex-col overflow-hidden">
         
         <!-- ========== ВЕРХНЯЯ ПАНЕЛЬ ========== -->
-        <header class="print-card flex-shrink-0 flex justify-between items-center px-8 py-4 border-b" style="background: var(--panel-raise); border-bottom: 1px solid var(--border-sharp);">
-            <h2 class="text-2xl font-semibold uppercase tracking-tight">
+        <header class="print-card flex-shrink-0 flex justify-between items-center px-4 sm:px-6 md:px-8 py-3 sm:py-4 border-b" style="background: var(--panel-raise); border-bottom: 1px solid var(--border-sharp); position: relative; z-index: 10000;">
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <!-- Hamburger кнопка для мобильных -->
+                <button class="hamburger-btn-dash lg:hidden" id="mobile-sidebar-btn" aria-label="Открыть меню">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <h2 class="text-lg sm:text-xl md:text-2xl font-semibold uppercase tracking-tight">
                 <span class="neon-electric">
                     <%= case @folder
                         when "all" then "ВСЕ ФОТО"
@@ -411,34 +634,49 @@
                         end %>
                 </span>
             </h2>
-            <div class="flex items-center space-x-6">
+            </div>
+            <div class="flex items-center space-x-2 sm:space-x-4 md:space-x-6 flex-wrap gap-2 sm:gap-0">
                 <!-- Кнопка Add Photo (outlined style) -->
-                <%= link_to new_project_path, class: "btn-outlined text-xs py-2.5 px-5 whitespace-nowrap" do %>
-                    + ДОБАВИТЬ ФОТО
-                <% end %>
+                <button onclick="openUploadModal('<%= @folder %>')" class="btn-outlined text-xs py-2 sm:py-2.5 px-3 sm:px-5 whitespace-nowrap min-h-[44px] flex items-center justify-center">
+                    <span class="hidden sm:inline">+ ДОБАВИТЬ ФОТО</span>
+                    <span class="sm:hidden">+</span>
+                </button>
                 
-                <!-- статистика быстрая -->
-                <div class="flex items-center space-x-3 text-sm">
+                <!-- статистика быстрая (скрыта на мобильных) -->
+                <div class="hidden md:flex items-center space-x-3 text-sm">
                     <span style="color: var(--text-muted);">КРЕДИТОВ:</span>
                     <span class="font-semibold" style="color: var(--accent-electric);"><%= @token_balance %></span>
                     <span style="color: var(--border-sharp);">|</span>
                     <span style="color: var(--text-muted);">ОБРАБОТАНО:</span>
                     <span class="font-semibold" style="color: var(--accent-blue);"><%= @total_photos %></span>
                 </div>
+                <!-- Кнопка Админ-панель (ВСЕГДА ВИДНА ДЛЯ АДМИНОВ) -->
+                <% if user_signed_in? && current_user.admin? %>
+                    <%= link_to rails_admin_path, class: "btn-outlined text-xs py-2 sm:py-2.5 px-3 sm:px-5 whitespace-nowrap min-h-[44px] flex items-center justify-center", style: "background: #ff3b7f; border-color: #ff3b7f; color: white; font-weight: 600; text-decoration: none; cursor: pointer; display: inline-flex;" do %>
+                        <span class="hidden sm:inline">📊 АДМИН</span>
+                        <span class="sm:hidden">📊</span>
+                    <% end %>
+                <% else %>
+                    <!-- Кнопка Админ-панель (всегда видна, но проверка будет на сервере) -->
+                    <%= link_to rails_admin_path, class: "btn-outlined text-xs py-2 sm:py-2.5 px-3 sm:px-5 whitespace-nowrap min-h-[44px] flex items-center justify-center", style: "background: #ff3b7f; border-color: #ff3b7f; color: white; font-weight: 600; text-decoration: none; cursor: pointer; display: inline-flex;" do %>
+                        <span class="hidden sm:inline">📊 АДМИН</span>
+                        <span class="sm:hidden">📊</span>
+                    <% end %>
+                <% end %>
                 <!-- профиль -->
-                <div class="relative" data-controller="dropdown">
-                    <button class="flex items-center space-x-3 print-card px-4 py-2 transition-all" data-action="click->dropdown#toggle" data-dropdown-target="button" style="background: var(--panel-deep); border: 1px solid var(--border-sharp);">
-                        <span class="text-sm font-semibold uppercase" style="color: var(--text-secondary);"><%= current_user.email.split('@').first %></span>
-                        <div class="w-9 h-9 bg-[var(--accent-electric)] rotate-6" style="box-shadow: 3px 3px 0 var(--accent-blue);"></div>
-                        <svg class="w-4 h-4" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="relative" data-controller="dropdown" style="z-index: 10000;">
+                    <button type="button" class="flex items-center space-x-2 sm:space-x-3 print-card px-2 sm:px-4 py-2 transition-all hover:opacity-80 min-h-[44px]" data-action="click->dropdown#toggle" data-dropdown-target="button" style="background: var(--panel-deep); border: 1px solid var(--border-sharp);">
+                        <span class="hidden sm:inline text-sm font-semibold uppercase" style="color: var(--text-secondary);"><%= current_user.email.split('@').first %></span>
+                        <div class="w-8 h-8 sm:w-9 sm:h-9 bg-[var(--accent-electric)] rotate-6" style="box-shadow: 3px 3px 0 var(--accent-blue);"></div>
+                        <svg class="w-4 h-4 hidden sm:block" style="color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </button>
-                    <div class="hidden absolute right-0 mt-2 w-48 print-card py-1 z-50 border-2" data-dropdown-target="menu" style="background: var(--panel-raise); border-color: var(--accent-electric); opacity: 0.5;">
-                        <%= link_to edit_user_registration_path, class: "block px-4 py-3 text-sm hover:bg-[var(--panel-deep)] transition-colors font-medium uppercase tracking-wide", style: "color: var(--text-secondary);" do %>
+                    <div class="hidden absolute right-0 mt-2 w-48 print-card py-1 border-2 shadow-lg" data-dropdown-target="menu" style="background: var(--panel-raise); border-color: var(--accent-electric); z-index: 99999 !important;">
+                        <%= link_to edit_user_registration_path, class: "block px-4 py-3 text-sm hover:bg-[var(--panel-deep)] transition-colors font-medium uppercase tracking-wide min-h-[44px] flex items-center", style: "color: var(--text-secondary);" do %>
                             ⚙️ Настройки
                         <% end %>
-                        <%= link_to destroy_user_session_path, method: :delete, data: { turbo_method: :delete }, class: "block px-4 py-3 text-sm hover:bg-[var(--panel-deep)] transition-colors font-semibold uppercase tracking-wide border-t", style: "color: var(--accent-electric); border-color: var(--border-sharp);" do %>
+                        <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "block px-4 py-3 text-sm hover:bg-[var(--panel-deep)] transition-colors font-semibold uppercase tracking-wide border-t cursor-pointer min-h-[44px] flex items-center", style: "color: var(--accent-electric); border-color: var(--border-sharp);" do %>
                             🚪 Выход
                         <% end %>
                     </div>
@@ -447,12 +685,12 @@
         </header>
 
         <!-- ========== ОСНОВНОЙ КОНТЕНТ ========== -->
-        <main class="flex-1 overflow-y-auto px-8 py-8" style="background: var(--ink);">
+        <main class="flex-1 overflow-y-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8" style="background: var(--ink); position: relative; z-index: 1;">
             
             <%= turbo_frame_tag "photos-grid" do %>
                 <% if @images.any? %>
                     <!-- сетка фотографий -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
                         <% @images.each do |image| %>
                             <%= render "dashboard/photo_card", image: image %>
                         <% end %>
@@ -492,7 +730,9 @@
                         <div class="text-7xl mb-6 neon-electric">📷</div>
                         <h2 class="text-2xl font-semibold mb-2 neon-electric">Nothing here yet</h2>
                         <p class="mb-8 max-w-md mx-auto" style="color: var(--text-secondary);">Начните с загрузки первого фото для создания виртуального стайлинга</p>
-                        <%= link_to "ДОБАВИТЬ ФОТО", new_project_path, class: "btn-flash inline-block px-8 py-4 text-sm" %>
+                        <button onclick="openUploadModal('<%= @folder %>')" class="btn-flash inline-block px-8 py-4 text-sm">
+                            ДОБАВИТЬ ФОТО
+                        </button>
                     </div>
                 <% end %>
             <% end %>
@@ -502,6 +742,80 @@
 
     <!-- скрипты для интерактивности -->
     <script>
+        // Функция для открытия модального окна загрузки фото (context-aware)
+        function openUploadModal(folder) {
+            // Определяем параметры контекста
+            let url = '<%= upload_modal_projects_path %>';
+            const params = new URLSearchParams();
+            
+            // Если folder - это число (ID папки)
+            const folderId = parseInt(folder);
+            if (!isNaN(folderId) && folderId > 0) {
+                params.append('folder_id', folderId);
+            }
+            // Если folder - это категория комнаты (living_room, bedroom и т.д.)
+            else if (folder && ['living_room', 'bedroom', 'dining_room', 'kitchen', 'bathroom', 'office', 'main_area'].includes(folder)) {
+                params.append('room_category', folder);
+            }
+            // Если folder - "all" или "unfiled" - не передаем параметры
+            
+            if (params.toString()) {
+                url += '?' + params.toString();
+            }
+            
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'text/html',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Удаляем существующее модальное окно, если есть
+                const existingModal = document.getElementById('upload-image-modal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+                
+                // Добавляем новое модальное окно в body
+                const modalContainer = document.createElement('div');
+                modalContainer.innerHTML = html;
+                document.body.appendChild(modalContainer);
+                
+                // Анимация появления
+                const modal = document.getElementById('upload-image-modal');
+                if (modal) {
+                    modal.style.opacity = '0';
+                    modal.style.transition = 'opacity 0.2s ease-in';
+                    setTimeout(() => {
+                        modal.style.opacity = '1';
+                    }, 10);
+                    
+                    // Извлекаем и выполняем скрипты из вставленного HTML
+                    const scripts = modalContainer.querySelectorAll('script');
+                    scripts.forEach(oldScript => {
+                        const newScript = document.createElement('script');
+                        Array.from(oldScript.attributes).forEach(attr => {
+                            newScript.setAttribute(attr.name, attr.value);
+                        });
+                        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                        oldScript.parentNode.replaceChild(newScript, oldScript);
+                    });
+                    
+                    // Инициализируем обработчики после вставки модального окна
+                    setTimeout(() => {
+                        if (typeof window.initUploadModalHandlers === 'function') {
+                            window.initUploadModalHandlers();
+                        }
+                    }, 50);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке модального окна:', error);
+            });
+        }
+
         // Функция для открытия модального окна создания проекта
         function openProjectModal() {
             fetch('<%= new_project_projects_path %>', {
@@ -595,6 +909,89 @@
             }
         }
 
+        // Функция для открытия модалки выбора стилей (глобальная)
+        window.openStyleSelectionModal = function(imageId) {
+            console.log('Opening style selection modal for image:', imageId);
+            const stylePath = '/images/' + imageId + '/style_selection';
+            
+            fetch(stylePath, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'text/html',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.error('Error response:', text);
+                        throw new Error('Ошибка загрузки стилей: ' + response.status + ' ' + response.statusText);
+                    });
+                }
+                return response.text();
+            })
+            .then(html => {
+                console.log('Modal HTML received, length:', html.length);
+                
+                // Удаляем существующее модальное окно выбора стилей, если есть
+                const existingModal = document.getElementById('style-selection-modal-' + imageId);
+                if (existingModal) {
+                    existingModal.remove();
+                }
+                
+                // Добавляем новое модальное окно в body
+                const modalContainer = document.createElement('div');
+                modalContainer.innerHTML = html;
+                document.body.appendChild(modalContainer);
+                
+                // Анимация появления
+                const modal = document.getElementById('style-selection-modal-' + imageId);
+                if (modal) {
+                    modal.style.opacity = '0';
+                    modal.style.transition = 'opacity 0.2s ease-in';
+                    setTimeout(() => {
+                        modal.style.opacity = '1';
+                    }, 10);
+                } else {
+                    console.error('Modal element not found after insertion');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке модального окна выбора стилей:', error);
+                alert('Не удалось загрузить список стилей: ' + error.message);
+            });
+        };
+
+        // Функция для закрытия модалки выбора стилей (глобальная)
+        window.closeStyleModal = function(imageId) {
+            const modal = document.getElementById('style-selection-modal-' + imageId);
+            if (modal) {
+                modal.style.opacity = '0';
+                modal.style.transition = 'opacity 0.2s ease-out';
+                setTimeout(() => {
+                    modal.remove();
+                }, 200);
+            }
+        };
+
+        // Функция для выбора стиля (глобальная)
+        window.selectStyle = function(imageId, styleId, styleName) {
+            // Закрываем модалку выбора стилей
+            if (typeof closeStyleModal === 'function') {
+                closeStyleModal(imageId);
+            }
+            
+            // Здесь будет логика создания генерации
+            // Пока что просто показываем сообщение
+            console.log('Selected style:', styleId, styleName, 'for image:', imageId);
+            
+            // TODO: После реализации оплаты здесь будет создание генерации
+            alert('Стиль "' + styleName + '" выбран. После реализации оплаты здесь будет создана генерация.');
+        };
+
         // Функция для закрытия модального окна
         function closeProjectModal() {
             const modal = document.getElementById('new-project-modal');
@@ -656,32 +1053,101 @@
             });
         });
 
-        // Dropdown меню для профиля
+        // Dropdown меню обрабатывается через Stimulus контроллер dropdown_controller.js
+        
+        // Делаем кнопку ADMIN кликабельной (если она есть)
         document.addEventListener('DOMContentLoaded', function() {
-            const dropdownButtons = document.querySelectorAll('[data-dropdown-target="button"]');
-            const dropdownMenus = document.querySelectorAll('[data-dropdown-target="menu"]');
-            
-            dropdownButtons.forEach((button, index) => {
-                button.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const menu = dropdownMenus[index];
-                    const isHidden = menu.classList.contains('hidden');
-                    
-                    // Закрываем все меню
-                    dropdownMenus.forEach(m => m.classList.add('hidden'));
-                    
-                    // Открываем текущее, если было скрыто
-                    if (isHidden) {
-                        menu.classList.remove('hidden');
-                    }
+            const adminButton = Array.from(document.querySelectorAll('button')).find(btn => btn.textContent.trim() === 'ADMIN');
+            if (adminButton) {
+                adminButton.addEventListener('click', function() {
+                    window.location.href = '/admin';
                 });
-            });
-            
-            // Закрываем меню при клике вне его
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('[data-controller="dropdown"]')) {
-                    dropdownMenus.forEach(menu => menu.classList.add('hidden'));
+                adminButton.style.cursor = 'pointer';
+                adminButton.style.textDecoration = 'underline';
+            }
+        });
+        
+        // Глобальное делегирование событий для модального окна загрузки
+        // Это работает даже если модальное окно добавлено динамически
+        document.addEventListener('click', function(e) {
+            // Кнопка закрытия (крестик)
+            if (e.target.closest('#closeModalBtn') || e.target.closest('#closeModalBtn svg') || e.target.closest('#closeModalBtn path')) {
+                e.preventDefault();
+                e.stopPropagation();
+                const modal = document.getElementById('upload-image-modal');
+                if (modal) {
+                    modal.style.opacity = '0';
+                    modal.style.transition = 'opacity 0.2s ease-out';
+                    setTimeout(() => {
+                        modal.remove();
+                    }, 200);
                 }
+                return false;
+            }
+            
+            // Кнопка отмены
+            if (e.target.closest('#cancelBtn') || (e.target.id === 'cancelBtn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                const modal = document.getElementById('upload-image-modal');
+                if (modal) {
+                    modal.style.opacity = '0';
+                    modal.style.transition = 'opacity 0.2s ease-out';
+                    setTimeout(() => {
+                        modal.remove();
+                    }, 200);
+                }
+                return false;
+            }
+        });
+
+        // Мобильное меню sidebar
+        const mobileSidebarBtn = document.getElementById('mobile-sidebar-btn');
+        const mobileSidebarClose = document.getElementById('mobile-sidebar-close');
+        const mobileSidebarOverlay = document.getElementById('mobile-sidebar-overlay');
+        const mobileSidebarDrawer = document.getElementById('mobile-sidebar-drawer');
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+        function openMobileSidebar() {
+            if (mobileSidebarBtn) mobileSidebarBtn.classList.add('active');
+            if (mobileSidebarOverlay) mobileSidebarOverlay.classList.add('active');
+            if (mobileSidebarDrawer) mobileSidebarDrawer.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMobileSidebar() {
+            if (mobileSidebarBtn) mobileSidebarBtn.classList.remove('active');
+            if (mobileSidebarOverlay) mobileSidebarOverlay.classList.remove('active');
+            if (mobileSidebarDrawer) mobileSidebarDrawer.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        if (mobileSidebarBtn) {
+            mobileSidebarBtn.addEventListener('click', openMobileSidebar);
+        }
+
+        if (mobileSidebarClose) {
+            mobileSidebarClose.addEventListener('click', closeMobileSidebar);
+        }
+
+        if (mobileSidebarOverlay) {
+            mobileSidebarOverlay.addEventListener('click', closeMobileSidebar);
+        }
+
+        // Закрытие меню при клике на ссылку
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                setTimeout(closeMobileSidebar, 300);
             });
         });
+
+        // Закрытие меню при нажатии Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && mobileSidebarDrawer && mobileSidebarDrawer.classList.contains('active')) {
+                closeMobileSidebar();
+            }
+        });
     </script>
+
+    <!-- Модальное окно пополнения баланса -->
+    <%= render 'replenish_modal' %>

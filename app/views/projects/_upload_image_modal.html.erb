@@ -1,0 +1,397 @@
+<% 
+  # Определяем предзаполненные значения на основе контекста
+  preselected_folder_id = @preselected_folder_id
+  preselected_project_id = @preselected_project_id
+  preselected_folder_name = @preselected_folder_name
+%>
+
+<!-- Модальное окно для загрузки фото -->
+<div id="upload-image-modal" class="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto" style="background: rgba(3, 5, 10, 0.95); backdrop-filter: blur(8px);" onclick="if(event.target === this) closeUploadModal()">
+  <div class="print-card w-full max-w-[95vw] sm:max-w-2xl mx-2 sm:mx-4 my-2 sm:my-8" style="background: var(--panel-raise); border: 2px solid var(--accent-electric); max-height: 95vh; overflow-y: auto;" onclick="event.stopPropagation()">
+    
+    <!-- Заголовок -->
+    <div class="flex items-center justify-between p-4 sm:p-6 border-b sticky top-0" style="background: var(--panel-raise); border-color: var(--border-sharp); z-index: 10;">
+      <h2 class="text-lg sm:text-xl md:text-2xl font-semibold uppercase tracking-tight neon-electric">ЗАГРУЗИТЬ ФОТО</h2>
+      <button type="button" id="closeModalBtn" class="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center transition-all hover:opacity-70 min-w-[44px] min-h-[44px]" style="color: var(--text-secondary);">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="p-4 sm:p-6">
+      <%= form_with model: @image, url: projects_path, method: :post, multipart: true, class: "space-y-6", data: { turbo: false }, id: "uploadForm" do |f| %>
+        <%= render "shared/error_messages", resource: @image %>
+
+        <!-- Drag and Drop зона -->
+        <div class="file-input-wrapper">
+          <div class="drop-zone p-6 sm:p-8 md:p-12 text-center cursor-pointer relative border-2 border-dashed transition-all" id="dropZone" style="background: var(--panel-deep); border-color: var(--border-sharp);">
+            <div id="dropZoneContent">
+              <div class="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4">📷</div>
+              <p class="font-bold text-base sm:text-lg mb-2" style="color: var(--text-primary);">Перетащите фото сюда</p>
+              <p class="text-xs sm:text-sm mb-3 sm:mb-4" style="color: var(--text-muted);">или</p>
+              <button type="button" class="btn-outlined inline-block text-xs sm:text-sm py-2 sm:py-2.5 px-3 sm:px-4 min-h-[44px]" id="selectFileBtn">ВЫБРАТЬ ФАЙЛ</button>
+              <p class="text-xs mt-3 sm:mt-4" style="color: var(--text-muted);">Поддерживаются: JPG, PNG, WebP</p>
+            </div>
+            <div id="fileInfo" class="hidden">
+              <div class="mb-4">
+                <img id="filePreview" src="" alt="Preview" class="max-w-full max-h-64 mx-auto rounded" style="display: none;">
+                <div id="fileIcon" class="text-4xl">✅</div>
+              </div>
+              <p class="font-bold text-lg mb-2" id="fileName" style="color: var(--text-primary);"></p>
+              <p class="text-sm mb-4" id="fileSize" style="color: var(--text-muted);"></p>
+              <div class="flex items-center justify-center gap-4">
+                <button type="button" class="text-sm font-semibold uppercase transition-colors" id="removeFile" style="color: var(--accent-blue);">🗑️ Удалить</button>
+              </div>
+            </div>
+            <%= f.file_field :file, accept: "image/*", class: "absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10", required: true, id: "fileInput" %>
+          </div>
+        </div>
+
+        <!-- Проект (опционально) -->
+        <div>
+          <%= f.label :project_id, "ПРОЕКТ", class: "block text-xs font-semibold uppercase tracking-wider mb-2", style: "color: var(--text-muted); letter-spacing: 1px;" %>
+          <%= f.collection_select :project_id, 
+              @projects || current_user.projects.active, 
+              :id, 
+              :name,
+              { prompt: "Выберите проект (необязательно)", include_blank: true, selected: preselected_project_id },
+              { class: "w-full px-4 py-3 text-sm uppercase tracking-wider", 
+                style: "background: var(--panel-deep); border: 2px solid var(--border-sharp); color: var(--text-primary); letter-spacing: 1px; border-radius: 0;",
+                id: "project_select" } %>
+          <p class="text-xs mt-1" style="color: var(--text-muted);">Проект не обязателен. Можно загрузить без проекта.</p>
+        </div>
+        
+        <!-- Комната / Папка (опционально) -->
+        <div>
+          <%= f.label :folder_id, "КОМНАТА / ПАПКА", class: "block text-xs font-semibold uppercase tracking-wider mb-2", style: "color: var(--text-muted); letter-spacing: 1px;" %>
+          <%= f.collection_select :folder_id, 
+              (@projects&.first&.folders&.ordered || []),
+              :id, 
+              :name,
+              { prompt: "Выберите комнату или папку (необязательно)", include_blank: true, selected: preselected_folder_id },
+              { class: "w-full px-4 py-3 text-sm uppercase tracking-wider", 
+                style: "background: var(--panel-deep); border: 2px solid var(--border-sharp); color: var(--text-primary); letter-spacing: 1px; border-radius: 0;",
+                id: "folder_select" } %>
+          <% if preselected_folder_name %>
+            <p class="text-xs mt-1 neon-electric">✓ Выбрано: <%= preselected_folder_name %></p>
+          <% else %>
+            <p class="text-xs mt-1" style="color: var(--text-muted);">Выберите категорию комнаты для организации фото</p>
+          <% end %>
+          <p class="text-xs mt-1" id="folder-hint" style="color: var(--accent-electric); display: none;">
+            <span id="folder-count">0</span> комнат доступно в выбранном проекте
+          </p>
+        </div>
+
+            <!-- Кнопки -->
+            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 pt-4">
+              <%= f.submit "ЗАГРУЗИТЬ", class: "btn-flash flex-1 text-sm py-3 min-h-[44px] flex items-center justify-center", id: "submitBtn" %>
+              <button type="button" id="cancelBtn" class="btn-outlined flex-1 text-center text-sm py-3 min-h-[44px] flex items-center justify-center">
+                ОТМЕНА
+              </button>
+            </div>
+      <% end %>
+      
+      <!-- Индикатор загрузки -->
+      <div id="uploadProgress" class="hidden mt-4 print-card p-4" style="background: var(--panel-deep);">
+        <div class="flex items-center space-x-3">
+          <div class="animate-spin rounded-full h-5 w-5 border-b-2" style="border-color: var(--accent-electric);"></div>
+          <p class="font-bold" style="color: var(--text-primary);">Загрузка изображения...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Определяем функцию закрытия модального окна глобально
+  function closeUploadModal() {
+    const modal = document.getElementById('upload-image-modal');
+    if (modal) {
+      modal.style.opacity = '0';
+      modal.style.transition = 'opacity 0.2s ease-out';
+      setTimeout(() => {
+        modal.remove();
+      }, 200);
+    }
+  }
+  
+  // Делаем функцию глобальной
+  window.closeUploadModal = closeUploadModal;
+
+  // Инициализация обработчиков для модального окна
+  function initUploadModalHandlers() {
+    // Проверяем, что модальное окно существует
+    const modal = document.getElementById('upload-image-modal');
+    if (!modal) return;
+    
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const dropZoneContent = document.getElementById('dropZoneContent');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const removeFileBtn = document.getElementById('removeFile');
+    const projectSelect = document.getElementById('project_select');
+    const folderSelect = document.getElementById('folder_select');
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    
+    // Обработчик для кнопки закрытия (крестик)
+    if (closeModalBtn) {
+      closeModalBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeUploadModal();
+      });
+    }
+    
+    // Обработчик для кнопки "ОТМЕНА"
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeUploadModal();
+        return false;
+      });
+    }
+
+    // Данные о папках для каждого проекта
+    const foldersData = {};
+    <% (@projects || current_user.projects.active.includes(:folders)).each do |project| %>
+    foldersData['<%= project.id %>'] = [
+      <% project.folders.ordered.each do |folder| %>
+      { id: <%= folder.id %>, name: <%= folder.name.to_json.html_safe %> },
+      <% end %>
+    ];
+    <% end %>
+
+    // Обработка выбора файла через input
+    fileInput.addEventListener('change', function(e) {
+      handleFileSelect(e.target.files);
+    });
+
+    // Клик на кнопку "ВЫБРАТЬ ФАЙЛ"
+    const selectFileBtn = document.getElementById('selectFileBtn');
+    if (selectFileBtn) {
+      selectFileBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        fileInput.click();
+      });
+    }
+
+    // Клик на drop zone также открывает file picker
+    dropZone.addEventListener('click', function(e) {
+      if (e.target.id === 'removeFile' || e.target.closest('#removeFile')) {
+        return;
+      }
+      if (e.target.id === 'selectFileBtn' || e.target.closest('#selectFileBtn')) {
+        return;
+      }
+      fileInput.click();
+    });
+
+    // Drag and Drop
+    dropZone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.style.borderColor = 'var(--accent-electric)';
+      dropZone.style.background = 'rgba(0, 224, 255, 0.1)';
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.style.borderColor = 'var(--border-sharp)';
+      dropZone.style.background = 'var(--panel-deep)';
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.style.borderColor = 'var(--border-sharp)';
+      dropZone.style.background = 'var(--panel-deep)';
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        fileInput.files = files;
+        handleFileSelect(files);
+      }
+    });
+
+    // Обработка выбранного файла
+    function handleFileSelect(files) {
+      if (files && files.length > 0) {
+        const file = files[0];
+        if (file.type.startsWith('image/')) {
+          dropZone.style.borderColor = 'var(--accent-electric)';
+          dropZoneContent.classList.add('hidden');
+          fileInfo.classList.remove('hidden');
+          
+          fileName.textContent = file.name;
+          fileSize.textContent = formatFileSize(file.size);
+          
+          const filePreview = document.getElementById('filePreview');
+          const fileIcon = document.getElementById('fileIcon');
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            filePreview.src = e.target.result;
+            filePreview.style.display = 'block';
+            fileIcon.style.display = 'none';
+          };
+          
+          reader.readAsDataURL(file);
+        } else {
+          alert('Пожалуйста, выберите изображение');
+        }
+      }
+    }
+
+    // Удаление файла
+    if (removeFileBtn) {
+      removeFileBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        fileInput.value = '';
+        dropZone.style.borderColor = 'var(--border-sharp)';
+        dropZoneContent.classList.remove('hidden');
+        fileInfo.classList.add('hidden');
+        
+        const filePreview = document.getElementById('filePreview');
+        const fileIcon = document.getElementById('fileIcon');
+        if (filePreview) {
+          filePreview.src = '';
+          filePreview.style.display = 'none';
+        }
+        if (fileIcon) {
+          fileIcon.style.display = 'block';
+        }
+      });
+    }
+
+    // Форматирование размера файла
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    // Динамическое обновление папок при выборе проекта
+    if (projectSelect && folderSelect) {
+      projectSelect.addEventListener('change', function() {
+        const projectId = this.value;
+        const folders = foldersData[projectId] || [];
+        
+        folderSelect.innerHTML = '<option value="">Выберите комнату или папку (необязательно)</option>';
+        folderSelect.value = '';
+        
+        const folderHint = document.getElementById('folder-hint');
+        const folderCount = document.getElementById('folder-count');
+        
+        if (folders.length > 0) {
+          folders.forEach(function(folder) {
+            const option = document.createElement('option');
+            option.value = folder.id.toString();
+            option.textContent = folder.name;
+            folderSelect.appendChild(option);
+          });
+          
+          if (folderHint && folderCount) {
+            folderCount.textContent = folders.length;
+            folderHint.style.display = 'block';
+          }
+        } else {
+          if (folderHint) {
+            folderHint.style.display = 'none';
+          }
+        }
+      });
+      
+      // Инициализация при загрузке страницы
+      // Если есть предзаполненный проект, обновляем список папок
+      <% if @preselected_project_id %>
+        // Если проект предзаполнен, выбираем его и обновляем папки
+        setTimeout(function() {
+          projectSelect.value = '<%= @preselected_project_id %>';
+          projectSelect.dispatchEvent(new Event('change'));
+          
+          // Если есть предзаполненная папка, выбираем её
+          <% if @preselected_folder_id %>
+            setTimeout(function() {
+              folderSelect.value = '<%= @preselected_folder_id %>';
+            }, 150);
+          <% end %>
+        }, 100);
+      <% elsif @preselected_folder_id %>
+        // Если только папка предзаполнена, находим её проект
+        <% if @preselected_project_id %>
+          setTimeout(function() {
+            projectSelect.value = '<%= @preselected_project_id %>';
+            projectSelect.dispatchEvent(new Event('change'));
+            setTimeout(function() {
+              folderSelect.value = '<%= @preselected_folder_id %>';
+            }, 150);
+          }, 100);
+        <% end %>
+      <% else %>
+        // Если проект выбран вручную, обновляем папки
+        if (projectSelect.value) {
+          setTimeout(function() {
+            projectSelect.dispatchEvent(new Event('change'));
+          }, 100);
+        }
+      <% end %>
+    }
+
+    // Обработка отправки формы
+    const uploadForm = document.getElementById('uploadForm');
+    if (uploadForm) {
+      uploadForm.addEventListener('submit', function(e) {
+        if (!fileInput.files || fileInput.files.length === 0) {
+          e.preventDefault();
+          alert('Пожалуйста, выберите изображение для загрузки');
+          return false;
+        }
+        
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'ЗАГРУЗКА...';
+        }
+        if (uploadProgress) {
+          uploadProgress.classList.remove('hidden');
+        }
+        
+        // Форма отправляется обычным способом (не через fetch)
+        // После успешной загрузки произойдет редирект на дашборд
+        // Модалка закроется автоматически при редиректе
+      });
+    }
+  }
+
+  // Делаем функцию инициализации глобальной
+  window.initUploadModalHandlers = initUploadModalHandlers;
+  
+  // Вызываем инициализацию сразу (для случая, если модальное окно уже в DOM)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initUploadModalHandlers);
+  } else {
+    // DOM уже загружен, вызываем сразу
+    initUploadModalHandlers();
+  }
+
+  // Закрытие по Escape (глобальный обработчик)
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const modal = document.getElementById('upload-image-modal');
+      if (modal && modal.style.display !== 'none' && !modal.classList.contains('hidden')) {
+        closeUploadModal();
+      }
+    }
+  });
+</script>

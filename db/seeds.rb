@@ -129,4 +129,33 @@ if Rails.env.development?
   end
 end
 
+# ============================================
+# ПЕРВЫЙ АДМИНИСТРАТОР
+# ============================================
+
+admin_email = 'admin@vsai.ru'
+admin_password = 'Admin123!' # Надежный пароль
+
+unless User.exists?(email: admin_email)
+  admin = User.create!(
+    email: admin_email,
+    password: admin_password,
+    password_confirmation: admin_password,
+    role: :admin,
+    confirmed_at: Time.current # Автоматически подтверждаем email для Devise
+  )
+  
+  # Выводим данные жирным шрифтом, чтобы было видно
+  puts "\n" + "=" * 60
+  puts "🔥 АДМИНИСТРАТОР УСПЕШНО СОЗДАН!"
+  puts "=" * 60
+  puts "📧 Email:    #{admin_email}"
+  puts "🔑 Пароль:   #{admin_password}"
+  puts "🌐 URL входа: http://localhost:3000/users/sign_in"
+  puts "🛠️  Админка:  http://localhost:3000/admin"
+  puts "=" * 60 + "\n\n"
+else
+  puts "\n⚠️  Администратор с email #{admin_email} уже существует"
+end
+
 puts "\n✅ Seeds выполнены успешно!"

@@ -1,0 +1,85 @@
+<!-- Модальное окно для выбора стиля -->
+<div id="style-selection-modal-<%= @image.id %>" class="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto" style="background: rgba(3, 5, 10, 0.95); backdrop-filter: blur(8px);" onclick="if(event.target === this) closeStyleModal(<%= @image.id %>)">
+  <div class="print-card w-full max-w-2xl mx-4 my-8" style="background: var(--panel-raise); border: 2px solid var(--accent-electric); max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation()">
+    <!-- Заголовок -->
+    <div class="flex items-center justify-between px-6 py-4 border-b sticky top-0" style="background: var(--panel-raise); border-color: var(--border-sharp); z-index: 10;">
+      <div>
+        <h2 class="text-xl font-semibold uppercase tracking-tight neon-electric mb-1">∞ СТИЛИ ∞</h2>
+        <p class="text-xs" style="color: var(--text-muted);">одна комната — 8 вариантов</p>
+      </div>
+      <button onclick="closeStyleModal(<%= @image.id %>)" class="text-3xl font-bold hover:text-[var(--accent-blue)] transition-colors" style="color: var(--text-muted);" aria-label="Закрыть">
+        ×
+      </button>
+    </div>
+
+    <!-- Список стилей -->
+    <div class="p-6">
+      <% if @styles.present? %>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <% @styles.each do |style| %>
+            <button 
+              onclick="if(typeof selectStyle === 'function') { selectStyle(<%= @image.id %>, <%= style.id %>, '<%= j(style.name) %>'); } else { window.selectStyle(<%= @image.id %>, <%= style.id %>, '<%= j(style.name) %>'); }" 
+              class="print-card p-4 text-left transition-all hover:border-[var(--accent-electric)] group"
+              style="background: var(--panel-deep); border: 1px solid var(--border-sharp); cursor: pointer;"
+              id="style-<%= style.id %>">
+              <div class="flex items-center justify-between">
+                <h3 class="text-base font-semibold uppercase neon-electric group-hover:text-[var(--accent-blue)] transition-colors">
+                  <%= style.name %>
+                </h3>
+                <svg class="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" style="color: var(--accent-electric);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+            </button>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center p-8">
+          <p class="text-sm" style="color: var(--text-muted);">
+            Стили не найдены. Пожалуйста, обратитесь к администратору.
+          </p>
+        </div>
+      <% end %>
+
+      <!-- Информация о вариантах -->
+      <div class="mt-6 p-4 print-card" style="background: var(--panel-deep); border: 1px solid var(--border-sharp);">
+        <p class="text-xs text-center" style="color: var(--text-muted);">
+          Выберите стиль для генерации виртуального стайлинга. После выбора будет создана генерация.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Функции уже определены в dashboard/index.html.erb
+  // Если они не доступны, определяем их здесь
+  if (typeof closeStyleModal === 'undefined') {
+    window.closeStyleModal = function(imageId) {
+      const modal = document.getElementById('style-selection-modal-' + imageId);
+      if (modal) {
+        modal.style.opacity = '0';
+        modal.style.transition = 'opacity 0.2s ease-out';
+        setTimeout(() => {
+          modal.remove();
+        }, 200);
+      }
+    };
+  }
+
+  if (typeof selectStyle === 'undefined') {
+    window.selectStyle = function(imageId, styleId, styleName) {
+      // Закрываем модалку выбора стилей
+      if (typeof closeStyleModal === 'function') {
+        closeStyleModal(imageId);
+      }
+      
+      // Здесь будет логика создания генерации
+      // Пока что просто показываем сообщение
+      console.log('Selected style:', styleId, styleName, 'for image:', imageId);
+      
+      // TODO: После реализации оплаты здесь будет создание генерации
+      alert('Стиль "' + styleName + '" выбран. После реализации оплаты здесь будет создана генерация.');
+    };
+  }
+</script>

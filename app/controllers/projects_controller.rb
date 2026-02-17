@@ -85,6 +85,65 @@ class ProjectsController < ApplicationController
     ]
   end
 
+  # Действие для модального окна загрузки фото (context-aware)
+  def upload_modal
+    @image = current_user.images.build(kind: :input)
+    @projects = current_user.projects.active.includes(:folders)
+    
+    # Инициализируем переменные для предзаполнения
+    @preselected_folder_id = nil
+    @preselected_project_id = nil
+    @preselected_folder_name = nil
+    
+    # Получаем контекст из параметров
+    room_category = params[:room_category] # living_room, bedroom и т.д.
+    folder_id = params[:folder_id]&.to_i # ID конкретной папки
+    
+    # Если передан folder_id - это конкретная папка проекта
+    if folder_id.present?
+      folder = Folder.joins(:project).where(id: folder_id, projects: { user_id: current_user.id }).first
+      if folder
+        @preselected_folder_id = folder.id
+        @preselected_project_id = folder.project_id
+        @preselected_folder_name = folder.name
+      end
+    # Если передан room_category - это общая категория комнаты
+    elsif room_category.present?
+      room_names = {
+        "living_room" => ["Гостиная", "Living Room"],
+        "bedroom" => ["Спальня", "Bedroom"],
+        "dining_room" => ["Столовая", "Dining Room"],
+        "kitchen" => ["Кухня", "Kitchen"],
+        "bathroom" => ["Ванная", "Bathroom"],
+        "office" => ["Офис", "Office"],
+        "main_area" => ["Главная зона", "Main Area"]
+      }
+      
+      folder_names = room_names[room_category] || []
+      if folder_names.any?
+        # Ищем первую папку с таким названием в любом проекте пользователя
+        folder = Folder.joins(:project)
+                      .where(projects: { user_id: current_user.id })
+                      .where("folders.name IN (?)", folder_names)
+                      .first
+        
+        if folder
+          @preselected_folder_id = folder.id
+          @preselected_project_id = folder.project_id
+          @preselected_folder_name = folder.name
+        else
+          # Если папки нет, но есть категория - просто запоминаем название
+          @preselected_folder_name = folder_names.first
+        end
+      end
+    end
+    
+    respond_to do |format|
+      format.html { render partial: 'projects/upload_image_modal', layout: false }
+      format.json { render json: { success: true } }
+    end
+  end
+
   def create
     # Получаем параметры и конвертируем в числа
     Rails.logger.debug "=== Image Upload Debug ==="
@@ -147,13 +206,50 @@ class ProjectsController < ApplicationController
         Rails.logger.debug "Requested folder_id: #{folder_id}, project_id: #{project_id}"
         
         # Если папка не найдена, но она существует у пользователя - возможно она из другого проекта
-        # В этом случае просто игнорируем folder_id и сохраняем только с project_id
+        # В этом случае ищем папку с таким же названием в выбранном проекте
         existing_folder = Folder.joins(:project).where(id: folder_id, projects: { user_id: current_user.id }).first
         if existing_folder
           Rails.logger.debug "Folder #{folder_id} exists but belongs to project #{existing_folder.project_id}, not #{project_id}"
-          Rails.logger.debug "Ignoring folder_id and saving with project_id only"
-          folder_id = nil
+          Rails.logger.debug "Looking for folder with same name '#{existing_folder.name}' in project #{project_id}"
+          
+          # Ищем папку с таким же названием в выбранном проекте
+          folder_with_same_name = project.folders.find_by(name: existing_folder.name)
+          
+          if folder_with_same_name
+            # Нашли папку с таким же названием - используем её
+            Rails.logger.debug "Found folder with same name: ID=#{folder_with_same_name.id}, Name=#{folder_with_same_name.name}"
+            folder_id = folder_with_same_name.id
+            folder = folder_with_same_name
+          else
+            # Папки с таким названием нет - создаём её
+            Rails.logger.debug "Folder with name '#{existing_folder.name}' not found in project #{project_id}, creating it"
+            
+            # Определяем sort_order на основе названия папки
+            room_categories_map = {
+              "Гостиная" => 1,
+              "Спальня" => 2,
+              "Столовая" => 3,
+              "Кухня" => 4,
+              "Ванная" => 5,
+              "Офис" => 6,
+              "Главная зона" => 7,
+              "Все фото" => 0
+            }
+            
+            sort_order = room_categories_map[existing_folder.name] || 99
+            
+            folder = project.folders.create!(
+              name: existing_folder.name,
+              icon: existing_folder.icon || "📁",
+              sort_order: sort_order
+            )
+            
+            folder_id = folder.id
+            Rails.logger.debug "Created new folder: ID=#{folder_id}, Name=#{folder.name}, Project=#{project_id}"
+          end
         else
+          # Папка не найдена вообще - это ошибка
+          Rails.logger.debug "Folder #{folder_id} not found for user"
           @projects = current_user.projects.active.includes(:folders)
           @room_categories = [
             { name: "Гостиная", slug: "living_room", icon: "🛋️" },
@@ -165,7 +261,7 @@ class ProjectsController < ApplicationController
             { name: "Главная зона", slug: "main_area", icon: "🏠" }
           ]
           @image = current_user.images.build(image_params.merge(kind: :input))
-          @image.errors.add(:folder_id, "не принадлежит выбранному проекту")
+          @image.errors.add(:folder_id, "не найдена")
           render :new, status: :unprocessable_entity
           return
         end
