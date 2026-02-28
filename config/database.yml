@@ -22,19 +22,21 @@ test:
 
 # Store production database in the storage/ directory, which by default
 # is mounted as a persistent Docker volume in config/deploy.yml.
+# In Render.com, the disk is mounted at /rails/storage
+# Use /rails/storage if it exists (Render), otherwise use storage/ (local)
 production:
   primary:
     <<: *default
-    database: storage/production.sqlite3
+    database: <%= File.exist?("/rails/storage") ? "/rails/storage/production.sqlite3" : "storage/production.sqlite3" %>
   cache:
     <<: *default
-    database: storage/production_cache.sqlite3
+    database: <%= File.exist?("/rails/storage") ? "/rails/storage/production_cache.sqlite3" : "storage/production_cache.sqlite3" %>
     migrations_paths: db/cache_migrate
   queue:
     <<: *default
-    database: storage/production_queue.sqlite3
+    database: <%= File.exist?("/rails/storage") ? "/rails/storage/production_queue.sqlite3" : "storage/production_queue.sqlite3" %>
     migrations_paths: db/queue_migrate
   cable:
     <<: *default
-    database: storage/production_cable.sqlite3
+    database: <%= File.exist?("/rails/storage") ? "/rails/storage/production_cable.sqlite3" : "storage/production_cable.sqlite3" %>
     migrations_paths: db/cable_migrate
